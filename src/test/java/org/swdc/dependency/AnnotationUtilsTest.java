@@ -1,6 +1,5 @@
 package org.swdc.dependency;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -20,27 +19,46 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 
-
+/**
+ * Annotation的工具类的单元测试。
+ */
 public class AnnotationUtilsTest {
 
 
+    /**
+     * 测试AliasFor注解，
+     * 这个注解的作用同SpringBoot的AliasFor
+     * 他的目的是合并多个注解，十分实用。
+     */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Named
     @Resource
     public  @interface AnnoTest {
 
+        /**
+         * 注解Name，作为named注解的value属性的别名
+         */
         @AliasFor(annotation = Named.class, value = "value")
         String name() default "";
 
+        /**
+         * 注解resourcesName，作为Resources的name属性的别名
+         */
         @AliasFor(annotation = Resource.class, value = "name")
         String resourceName() default "";
 
+        /**
+         * 注解type，作为Resources的type属性的别名
+         */
         @AliasFor(annotation = Resource.class,value = "type")
         Class type() default Object.class;
 
     }
 
+    /**
+     * 测试注解合并的类
+     */
     @Singleton
     @AnnoTest(type = TestEntry.class,resourceName = "resName",name = "testEnt")
     public static class TestEntry {
@@ -50,13 +68,11 @@ public class AnnotationUtilsTest {
 
         }
 
-        @PostConstruct
-        public void initTest() {
-            System.out.println("test init method");
-        }
-
     }
 
+    /**
+     * 测试注解的解析的类
+     */
     @Named("test")
     public static class TestEntTwo{
 
@@ -85,6 +101,9 @@ public class AnnotationUtilsTest {
 
     }
 
+    /**
+     * 测试注解的查找
+     */
     @Test
     public void testAnnotationFind() {
         // 测试获取直接标记在类上面的注解
@@ -105,6 +124,9 @@ public class AnnotationUtilsTest {
         Assertions.assertTrue(annoMap.isEmpty());
     }
 
+    /**
+     * 测试注解的读取
+     */
     @Test
     public void testAnnotationRead() {
         AnnotationDescription desc = AnnotationUtil.findAnnotation(TestEntTwo.class,Named.class);
