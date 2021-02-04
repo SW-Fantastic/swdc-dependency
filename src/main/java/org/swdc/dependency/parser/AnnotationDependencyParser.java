@@ -19,6 +19,7 @@ import org.swdc.dependency.registry.DependencyInfo;
 import org.swdc.dependency.registry.FactoryDependencyInfo;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -201,7 +202,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         }
 
         // 解析方法注入
-        Method[] methods = source.getMethods();
+        List<Method> methods = ReflectionUtil.findDependencyMethods(source);
         for (Method method: methods) {
             if (!AnnotationUtil.hasDependency(method)) {
                 Map<Class, AnnotationDescription> descriptionMap = AnnotationUtil.getAnnotations(method);
@@ -223,7 +224,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         }
 
         // 解析字段注入的信息
-        Field[] fields = source.getDeclaredFields();
+        List<Field> fields = ReflectionUtil.findDependencyFields(source);
         for (Field field: fields) {
             if(!AnnotationUtil.hasDependency(field)) {
                 continue;

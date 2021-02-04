@@ -27,6 +27,11 @@ public class TypedKey<T> {
     public static <T> TypedKey<T> getTypedKey(Class<T> type,String name) {
         if (keys.containsKey(type)) {
             Map<String,TypedKey> typedKeyMap = keys.get(type);
+            if (!typedKeyMap.containsKey(name)) {
+                TypedKey key = new TypedKey(type,name);
+                typedKeyMap.put(name,key);
+                return key;
+            }
             return typedKeyMap.get(name);
         }
         TypedKey<T> key = new TypedKey<>(type,name);

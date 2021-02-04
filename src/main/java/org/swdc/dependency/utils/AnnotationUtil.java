@@ -21,7 +21,9 @@ public class AnnotationUtil {
     public static boolean hasDependency(AnnotatedElement element) {
         Map<Class,AnnotationDescription> descriptions = getAnnotations(element);
         List<Class> injectable = List.of(Inject.class,Resource.class,Aware.class,Named.class);
-        return injectable.stream().anyMatch(descriptions::containsKey);
+        return injectable
+                .stream()
+                .anyMatch(c -> findAnnotationIn(descriptions,c) != null);
     }
 
     /**
