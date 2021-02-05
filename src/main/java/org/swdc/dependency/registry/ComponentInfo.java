@@ -1,5 +1,7 @@
 package org.swdc.dependency.registry;
 
+import jakarta.inject.Provider;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,4 +177,9 @@ public class ComponentInfo {
     public void setDestroyMethod(Method destroyMethod) {
         this.destroyMethod = destroyMethod;
     }
+
+    public boolean isFactoryComponent() {
+        return Provider.class.isAssignableFrom(clazz);
+    }
+
 }

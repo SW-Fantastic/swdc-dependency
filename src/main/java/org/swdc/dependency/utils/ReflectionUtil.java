@@ -3,6 +3,7 @@ package org.swdc.dependency.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ReflectionUtil {
@@ -47,6 +48,15 @@ public class ReflectionUtil {
             current = current.getSuperclass();
         }
         return methodList;
+    }
+
+    /**
+     * 获取组件的工厂方法
+     * @param clazz 组件类
+     * @return 工厂方法列表
+     */
+    public List<Method> findDefineMethod(Class clazz) {
+        return Collections.emptyList();
     }
 
 }

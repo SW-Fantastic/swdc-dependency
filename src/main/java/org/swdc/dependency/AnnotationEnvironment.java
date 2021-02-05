@@ -3,25 +3,22 @@ package org.swdc.dependency;
 import jakarta.annotation.Resource;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.swdc.dependency.annotations.Dependency;
 import org.swdc.dependency.annotations.ScopeImplement;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.parser.AnnotationDependencyParser;
 import org.swdc.dependency.registry.*;
-import org.swdc.dependency.scopes.CacheDependencyHolder;
 import org.swdc.dependency.scopes.SingletonDependencyScope;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
 
-import java.lang.reflect.*;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class AnnotationEnvironment implements DependencyEnvironment,Listenable<AfterCreationListener> {
+public class AnnotationEnvironment extends EnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener> {
 
     private Map<Class, DependencyScope> scopes;
     private DefaultDependencyRegistryContext registryContext;
@@ -30,8 +27,6 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
     private Map<Class, Object> factoryMap;
 
     private List<AfterCreationListener> afterCreationListeners;
-
-    private CacheDependencyHolder holder = new CacheDependencyHolder();
 
     private AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -102,6 +97,11 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
 
         }
 
+        // 禁止返回Factory组件
+        if (info.isFactoryComponent()) {
+            return null;
+        }
+
         DependencyScope scope = getScope(info.getScope());
         Object target = scope.getByClass(clazz);
 
@@ -110,28 +110,13 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
             return (T)target;
         }
 
-        if (holder.isCreating(clazz)) {
-            throw new RuntimeException("出现了循环依赖：" + clazz.getName());
-        } else {
-            holder.begin(clazz);
-        }
-
-        if (info.getFactoryInfo() != null) {
-            target = createByFactory(info);
-        } else {
-            target = createByConstructor(info);
-        }
-
-        // 进行Setter和字段的注入
-        target = initialize(info,target);
+        target = create(info);
 
         if (info.isMultiple()) {
             scope.put(info.getName(),info.getClazz(),info.getAbstractClazz(),target);
         } else {
             scope.put(info.getName(),info.getClazz(),target);
         }
-
-        holder.complete(info);
 
         if (info.getInitMethod() != null) {
             try {
@@ -144,67 +129,51 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
         return (T)target;
     }
 
-    private <T> T initialize(ComponentInfo info, T target) {
-        List<DependencyInfo> setterDependency = info.getDependencyInfos();
-        for (DependencyInfo depInfo: setterDependency) {
-            if (depInfo.getField() != null) {
-                // 字段注入的类型
-                ComponentInfo fieldDepInfo = depInfo.getDependency()[0];
-
-                Map<Class,AnnotationDescription> map = AnnotationUtil.getAnnotations(depInfo.getField());
-
-                final Object realParam = getInternal(fieldDepInfo,map);
-                final Object targetObject = target;
-
-                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-                    try {
-                        Field field = depInfo.getField();
-                        field.setAccessible(true);
-                        field.set(targetObject,realParam);
-                        field.setAccessible(false);
-                        return null;
-                    } catch (IllegalAccessException e) {
-                        return null;
-                    }
-                });
-
-            } else {
-                ComponentInfo[] dependency = depInfo.getDependency();
-                Object[] params = new Object[dependency.length];
-                Method method = depInfo.getSetter();
-                Parameter[] parameters = method.getParameters();
-                for (int idx = 0; idx < parameters.length; idx ++) {
-                    Map<Class,AnnotationDescription> map = AnnotationUtil.getAnnotations(depInfo.getSetter());
-                    ComponentInfo methodParam = dependency[idx];
-                    Object realParam = getInternal(methodParam,map);
-                    if (realParam == null) {
-                        throw new RuntimeException("无法初始化实例，因为缺少组件:" + methodParam.getClazz().getName());
-                    }
-                    params[idx] = realParam;
-                }
+    @Override
+    public <T> T getFactory(Class clazz) {
+        Object factory = factoryMap.get(clazz);
+        if (factory == null) {
+            if (AnnotationUtil.findAnnotation(clazz, Dependency.class) != null) {
+                // 配置类型的Factory，不允许注入，只提供组件和配置。
                 try {
-                    method.invoke(target,params);
+                    factory = clazz.getConstructor().newInstance();
                 } catch (Exception e) {
-                    throw new RuntimeException("初始化实例失败:", e);
+                    throw new RuntimeException("创建失败，不能初始化声明的组件",e);
+                }
+            } else {
+                // 组件类型的Factory，需要实现Provider接口
+                ComponentInfo info = registryContext.findByClass(clazz);
+                if (info == null) {
+                    parser.parse(clazz,registryContext);
+                    info = registryContext.findByClass(clazz);
+
+                    if(info == null) {
+                        throw new RuntimeException("无法创建工厂组件，解析失败：" + clazz.getName());
+                    }
+                }
+                factory = create(info);
+                if (info.getInitMethod() != null) {
+                    try {
+                        info.getInitMethod().invoke(factory);
+                    } catch (Exception e) {
+                        throw new RuntimeException("无法初始化组件：" + info.getInitMethod(),e);
+                    }
                 }
             }
         }
-
-        for (AfterCreationListener listener: afterCreationListeners) {
-            target = (T)listener.afterCreated(target);
-        }
-
-        return target;
+        return (T)factory;
     }
 
-    private <T> T getInternal(ComponentInfo info, Map<Class, AnnotationDescription> objects) {
-
+    @Override
+    public  <T> T getInternal(ComponentInfo info, Object object) {
         Object realComp = null;
-
+        Map<Class, AnnotationDescription> objects = (Map<Class, AnnotationDescription>)object;
         if (!info.getName().equals(info.getClazz().getName())) {
             // 具名组件，名称和class的全限定名不一致。
-            realComp = Optional.ofNullable(getByName(info.getName()))
-                    .orElse(holder.getByName(info.getName()));
+            realComp = getHolder().getByName(info.getName());
+            if (realComp == null) {
+                realComp = getByName(info.getName());
+            }
         } else if (info.isMultiple()) {
             // 组件是多实例的
             AnnotationDescription named = objects.get(Named.class);
@@ -214,123 +183,48 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
             if (named != null) {
                 String name = named.getProperty(String.class,"value");
                 // named注解，匹配具名组件
-                realComp = Optional.ofNullable(getByName(name))
-                        .orElse(holder.getByName(name));
+                realComp = getHolder().getByName(name);
+                if (realComp == null) {
+                    realComp = getByName(name);
+                }
             }
 
             if (realComp == null && resource != null) {
                 // 有Resources，分别进行具名和类型匹配
                 String name = resource.getProperty(String.class,"name");
                 if (!name.isBlank()) {
-                    realComp = Optional.ofNullable(getByName(name))
-                            .orElse(holder.getByName(name));
+                    realComp = getHolder().getByName(name);
+                    if (realComp == null) {
+                        realComp = getByName(name);
+                    }
                 }
                 Class clazz = resource.getProperty(Class.class,"type");
                 if (info.getAbstractClazz().isAssignableFrom(clazz)) {
-                    realComp = getByClass(clazz);
+                    realComp = getHolder().getByClass(clazz);
                     if (realComp == null) {
-                        realComp = holder.getByClass(clazz);
+                        realComp = this.getByClass(clazz);
                     }
                 }
             }
         } else {
             // 根据类型处理
-            realComp = Optional.ofNullable(getByClass(info.getClazz()))
-                    .orElse(holder.getByClass(info.getClazz()));
+            realComp = getHolder().getByClass(info.getClazz());
+            if (realComp == null) {
+                realComp = getByClass(info.getClazz());
+            }
         }
         return (T)realComp;
     }
-
-    private <T> T createByConstructor(ComponentInfo info) {
-
-        if (info.getConstructorInfo() != null) {
-
-            ConstructorInfo constructorInfo = info.getConstructorInfo();
-
-            ComponentInfo[] dependencies = constructorInfo.getDependencies();
-            Object[] params = new Object[dependencies.length];
-            Constructor constructor = constructorInfo.getConstructor();
-            Parameter[] parameters = constructor.getParameters();
-
-            for (int idx = 0; idx < params.length; idx ++) {
-                ComponentInfo param = dependencies[idx];
-                Map<Class,AnnotationDescription> description = AnnotationUtil.getAnnotations(parameters[idx]);
-                Object realComp = getInternal(param,description);
-                if (realComp == null) {
-                    // cache和scopes里面都没有
-                    throw new RuntimeException("无法创建实例，因为缺少组件:" + param.getClazz().getName());
-                }
-                params[idx] = realComp;
-            }
-
-            try {
-                Object result = constructor.newInstance(params);
-                holder.put(info,result);
-                return (T)result;
-            } catch (Exception e) {
-                throw new RuntimeException("创建失败：",e);
-            }
-
-        } else {
-
-            try {
-                Constructor constructor = info.getClazz().getConstructor();
-                if (constructor == null) {
-                    throw new RuntimeException("无法创建实例，因为没有合适的构造方法。");
-                }
-                Object result = constructor.newInstance();
-                holder.put(info,result);
-                return (T)result;
-            } catch (Exception e) {
-                throw new RuntimeException("创建失败，原因是：",e);
-            }
-
-        }
-    }
-
-    public <T> T createByFactory(ComponentInfo info) {
-        FactoryDependencyInfo dep = info.getFactoryInfo();
-        Method method = info.getFactoryMethod();
-
-        ComponentInfo[] dependencies = dep.getDependencies();
-        Object[] params = new Object[dependencies.length];
-        Parameter[] parameters = method.getParameters();
-        for (int idx = 0; idx < params.length; idx ++) {
-            ComponentInfo param = dependencies[idx];
-            Map<Class,AnnotationDescription> description = AnnotationUtil.getAnnotations(parameters[idx]);
-            Object realComp = getInternal(param,description);
-            if (realComp == null) {
-                // cache和scopes里面都没有
-                throw new RuntimeException("无法创建实例，因为缺少组件:" + param.getClazz().getName());
-            }
-            params[idx] = realComp;
-        }
-        try {
-            if (dep.isStatic()) {
-                Object result = method.invoke(null,params);
-                holder.put(info,result);
-                return (T)result;
-            } else {
-                Object factory = factoryMap.get(info.getFactory());
-                if (factory == null) {
-                    factory = info.getFactory().getConstructor().newInstance();
-                    factoryMap.put(info.getFactory(),factory);
-                }
-                Object result = method.invoke(factory,params);
-                holder.put(info,result);
-                return (T)result;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("创建失败：",e);
-        }
-    }
-
 
     @Override
     public <T> T getByName(String name) {
         checkStatus();
         ComponentInfo info = registryContext.findByNamed(name);
         if (info == null) {
+            return null;
+        }
+        // 禁止返回Factory组件
+        if (info.isFactoryComponent()) {
             return null;
         }
         DependencyScope scope = getScope(info.getScope());
@@ -340,14 +234,7 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
         Object target = scope.getByName(name);
         if (target == null) {
 
-            holder.begin(info.getClazz());
-            if (info.getFactoryInfo() != null) {
-                target = this.createByFactory(info);
-            } else {
-                target = this.createByConstructor(info);
-            }
-
-            this.initialize(info,target);
+            target = create(info);
 
             if (info.isMultiple()) {
                 scope.put(info.getName(),info.getClazz(),info.getAbstractClazz(),target);
@@ -363,7 +250,6 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
                 }
             }
 
-            holder.complete(info);
         }
 
         return (T)target;
@@ -386,25 +272,15 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
         result = new ArrayList();
 
         for (ComponentInfo info: infoList) {
-            if (!holder.isCreating(info.getClazz())) {
-                holder.begin(info.getClazz());
-            } else {
-                throw new RuntimeException("发现了循环依赖：" + info.getClazz().getName());
+            // 禁止返回Factory组件
+            if (info.isFactoryComponent()) {
+                continue;
             }
-
-            Object target = null;
-
-            if (info.getFactoryInfo() != null) {
-                target = createByFactory(info);
-            } else {
-                target = createByConstructor(info);
-            }
+            Object target = create(info);
 
             // 进行Setter和字段的注入
-            target = initialize(info,target);
             scope.put(info.getName(),info.getClazz(),info.getAbstractClazz(),target);
 
-            holder.complete(info);
             result.add(target);
             if (info.getInitMethod() != null) {
                 try {
@@ -475,6 +351,12 @@ public class AnnotationEnvironment implements DependencyEnvironment,Listenable<A
            ComponentInfo info = registryContext.findByClass(object.getClass());
            if (info.getDestroyMethod() != null) {
                info.getDestroyMethod().invoke(object);
+           }
+       }
+       for (Object factory:factoryMap.values()) {
+           ComponentInfo info = registryContext.findByClass(factory.getClass());
+           if (info.getDestroyMethod() != null) {
+               info.getDestroyMethod().invoke(factory);
            }
        }
         closed.set(true);

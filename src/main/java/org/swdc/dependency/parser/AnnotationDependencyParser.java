@@ -36,23 +36,33 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
         List<ComponentInfo> list = new ArrayList<>();
 
-        if (source.getAnnotation(Dependency.class) != null) {
+        if (AnnotationUtil.findAnnotation(source,Dependency.class) != null) {
+            // 检查和处理声明类型的组件定义
             List<Method> methods = Stream.of(source.getMethods())
-                    .filter(m -> m.getAnnotation(Factory.class) != null)
+                    .filter(m -> AnnotationUtil.findAnnotation(m,Factory.class) != null)
                     .sorted(Comparator.comparingInt(Method::getParameterCount))
                     .collect(Collectors.toList());
             for (Method method: methods) {
                 if (method.getAnnotation(Factory.class) != null) {
+                    // 解析组件声明
                     this.parseInternalFactory(method,context,list);
                 }
             }
         } else {
+            // 解析普通的组件信息
             parseInternal(source,context,list);
         }
 
         return list;
     }
 
+    /**
+     * 解析用来声明组件的方法
+     * @param method 方法
+     * @param context 注册上下文
+     * @param container 记录返回值的列表
+     * @return 解析完成的组件信息
+     */
     private ComponentInfo parseInternalFactory(Method method,DependencyRegisterContext context, List<ComponentInfo> container) {
         Class type = method.getReturnType();
         Factory factory = method.getAnnotation(Factory.class);

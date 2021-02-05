@@ -6,6 +6,13 @@ import org.swdc.dependency.registry.ComponentInfo;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 组件的临时缓存池。
+ *
+ * 未完成创建的组件会临时性存放的位置。
+ * 用来检查和处理循环依赖。
+ *
+ */
 public class CacheDependencyHolder implements DependencyContext {
 
     private Map<Class, List<Object>> typedCache = new HashMap<>();
