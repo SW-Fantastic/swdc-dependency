@@ -14,7 +14,6 @@ import java.lang.annotation.Target;
  *
  * 方法有返回引用类型的返回值。
  * 方法的参数是可以被注入的，可以在这个位置引用其他组件。
- * 方法的参数可以使用Provider接口（javax.inject.Provider）
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

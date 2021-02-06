@@ -20,6 +20,6 @@ public @interface ScopeImplement {
      * Scope的实现类
      * @return Scope的具体实现类
      */
-    Class<? extends DependencyScope> value();
+    Class value();
 
 }

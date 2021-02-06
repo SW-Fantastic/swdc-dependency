@@ -8,6 +8,23 @@ import java.util.List;
 
 public class ReflectionUtil {
 
+    public static List<Method> findAllMethods(Class clazz) {
+        List<Method> methodList = new ArrayList<>();
+        Class current = clazz;
+
+        while (current != null) {
+            if (current == Object.class) {
+                break;
+            }
+            Method[] methods = current.getMethods();
+            for (Method method: methods) {
+                methodList.add(method);
+            }
+            current = current.getSuperclass();
+        }
+        return methodList;
+    }
+
     /**
      * 获取Class的可注入方法
      * @param clazz 类

@@ -2,9 +2,13 @@ package org.swdc.dependency;
 
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import jakarta.inject.Scope;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.swdc.dependency.annotations.Dependency;
+import org.swdc.dependency.annotations.Factory;
+import org.swdc.dependency.annotations.Prototype;
 import org.swdc.dependency.annotations.ScopeImplement;
 import org.swdc.dependency.parser.AnnotationDependencyParser;
 import org.swdc.dependency.registry.ComponentInfo;
@@ -132,6 +136,34 @@ public class DefaultRegisterTest {
 
     }
 
+    @Dependency
+    public static class DependencyDeclare {
+
+        @Factory
+        public TestTwo testTwo() {
+            return new TestTwo();
+        }
+
+        @Factory(scope = Prototype.class)
+        public TestOne testOne() {
+            return new TestOne();
+        }
+
+        @Factory
+        public TestClass testClass(TestOne testOne) {
+            return new TestClass(testOne);
+        }
+
+    }
+
+    public static class TestProvider implements Provider<TestOne> {
+
+        @Override
+        public TestOne get() {
+            return new TestOne();
+        }
+    }
+
     @Test
     public void testSimpleParse()  {
         DefaultDependencyRegistryContext context = new DefaultDependencyRegistryContext();
@@ -187,6 +219,7 @@ public class DefaultRegisterTest {
 
     @Test
     public void testCustomScope() {
+
         DefaultDependencyRegistryContext context = new DefaultDependencyRegistryContext();
         AnnotationDependencyParser parser = new AnnotationDependencyParser();
         parser.parse(TestScope.class,context);
@@ -194,6 +227,37 @@ public class DefaultRegisterTest {
 
         Assertions.assertNotNull(info);
         Assertions.assertEquals(Single.class,info.getScope());
+
+    }
+
+    @Test
+    public void testDeclareDependencyTest() {
+
+        DefaultDependencyRegistryContext context = new DefaultDependencyRegistryContext();
+        AnnotationDependencyParser parser = new AnnotationDependencyParser();
+        parser.parse(DependencyDeclare.class,context);
+
+        ComponentInfo testOne = context.findByClass(TestOne.class);
+        Assertions.assertNotNull(testOne);
+
+        ComponentInfo testTwo = context.findByClass(TestTwo.class);
+        Assertions.assertNotNull(testTwo);
+
+        ComponentInfo testClass = context.findByClass(TestClass.class);
+        Assertions.assertNotNull(testClass);
+
+        Assertions.assertEquals(Prototype.class,testOne.getScope());
+
+    }
+
+    @Test
+    public void testProvider() {
+
+        DefaultDependencyRegistryContext context = new DefaultDependencyRegistryContext();
+        AnnotationDependencyParser parser = new AnnotationDependencyParser();
+        parser.parse(TestProvider.class,context);
+
+        Assertions.assertNotNull(context.findByClass(TestOne.class));
 
     }
 

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class AnnotationEnvironment extends EnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener> {
 
     private Map<Class, DependencyScope> scopes;
+
     private DefaultDependencyRegistryContext registryContext;
     private DependencyParser<Class> parser;
 
@@ -51,36 +52,25 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         scopes.put(scope.getScopeType(),scope);
     }
 
-    public AnnotationEnvironment withDependency(Class dependency) {
-        this.parser.parse(dependency,registryContext);
-        return this;
-    }
-
-    public AnnotationEnvironment withScope(DependencyScope scope) {
+    @Override
+    public void registerComponent(Class component) {
         checkStatus();
-        this.registerScope(scope);
-        return this;
-    }
-
-    public AnnotationEnvironment withComponent(Class clazz) {
-        checkStatus();
-        ComponentInfo info = this.registryContext.findByClass(clazz);
+        ComponentInfo info = this.registryContext.findByClass(component);
         if (info == null) {
-            parser.parse(clazz,this.registryContext);
+            parser.parse(component,this.registryContext);
         }
-        return this;
     }
 
-    public AnnotationEnvironment afterRegister(AfterRegisterListener listener) {
-        checkStatus();
-        registryContext.addListener(listener);
-        return this;
-    }
-
-    public AnnotationEnvironment afterCreation(AfterCreationListener listener) {
+    @Override
+    public void registerCreationListener(AfterCreationListener listener) {
         checkStatus();
         this.addListener(listener);
-        return this;
+    }
+
+    @Override
+    public void registerParsedListener(AfterRegisterListener registerListener) {
+        checkStatus();
+        registryContext.addListener(registerListener);
     }
 
     @Override
@@ -318,7 +308,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
                     "annotation and implement the scope。");
         }
         try {
-            DependencyScope scope = implInfo.value().getConstructor().newInstance();
+            DependencyScope scope = (DependencyScope) implInfo.value().getConstructor().newInstance();
             scopes.put(scopeType,scope);
             return scope;
         } catch (Exception e) {

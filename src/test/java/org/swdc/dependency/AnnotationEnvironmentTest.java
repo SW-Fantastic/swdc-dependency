@@ -1,8 +1,13 @@
 package org.swdc.dependency;
 
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.swdc.dependency.annotations.Dependency;
+import org.swdc.dependency.annotations.Factory;
+import org.swdc.dependency.annotations.Prototype;
 
 public class AnnotationEnvironmentTest {
 
@@ -67,6 +72,52 @@ public class AnnotationEnvironmentTest {
 
     }
 
+    @Prototype
+    public static class PrototypeClass {
+
+        public PrototypeClass() {
+
+        }
+
+    }
+
+    public static class TestProvider implements Provider<ConstructorTestClass> {
+
+        @Inject
+        private NoArgConstructorClass constructorClass;
+
+        @Override
+        public ConstructorTestClass get() {
+            return new ConstructorTestClass(constructorClass);
+        }
+
+    }
+
+    @Prototype
+    public static class CleanerTest {
+
+        @PreDestroy
+        public void cleaner() {
+            System.out.println("Cleaned");
+        }
+
+    }
+
+    @Dependency
+    public static class DeclareClass {
+
+        @Factory
+        public NoArgConstructorClass noArgConstructor() {
+            return new NoArgConstructorClass();
+        }
+
+        @Factory
+        public ConstructorTestClass testClass(NoArgConstructorClass noArgConstructorClass) {
+            return new ConstructorTestClass(noArgConstructorClass);
+        }
+
+    }
+
     @Test
     public void testInjectConstructor() {
         AnnotationEnvironment environment = new AnnotationEnvironment();
@@ -119,6 +170,32 @@ public class AnnotationEnvironmentTest {
         } catch (Exception e) {
 
         }
+    }
+
+    @Test
+    public void testCustomScope() {
+        AnnotationEnvironment environment = new AnnotationEnvironment();
+        PrototypeClass prototypeClass = environment.getByClass(PrototypeClass.class);
+        Assertions.assertNotEquals(prototypeClass,environment.getByClass(PrototypeClass.class));
+    }
+
+    @Test
+    public void testDeclared() {
+        AnnotationLoader loader = new AnnotationLoader();
+        DependencyContext context = loader.withProvider(TestProvider.class).load();
+        ConstructorTestClass testClass = context.getByClass(ConstructorTestClass.class);
+        Assertions.assertNotNull(testClass);
+        Assertions.assertEquals(testClass.constructorClass,context.getByClass(NoArgConstructorClass.class));
+    }
+
+    @Test
+    public void testProvider() {
+        AnnotationLoader loader = new AnnotationLoader();
+        DependencyContext context = loader.withProvider(TestProvider.class).load();
+
+        ConstructorTestClass constructorTestClass = context.getByClass(ConstructorTestClass.class);
+        Assertions.assertEquals(context.getByClass(NoArgConstructorClass.class),constructorTestClass.constructorClass);
+        Assertions.assertNull(context.getByClass(TestProvider.class));
     }
 
 }

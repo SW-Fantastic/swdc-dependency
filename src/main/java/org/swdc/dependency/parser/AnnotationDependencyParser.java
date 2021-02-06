@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import jakarta.inject.Named;
+import jakarta.inject.Provider;
 import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 import org.swdc.dependency.DependencyParser;
@@ -66,24 +67,29 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
     private ComponentInfo parseInternalFactory(Method method,DependencyRegisterContext context, List<ComponentInfo> container) {
         Class type = method.getReturnType();
         Factory factory = method.getAnnotation(Factory.class);
-        ComponentInfo[] dependInfos = new ComponentInfo[method.getParameterCount()];
-        Parameter[] params = method.getParameters();
-        for (int idx = 0; idx < dependInfos.length; idx ++) {
-            ComponentInfo info = null;
-            Parameter param = params[idx];
-            Map<Class,AnnotationDescription>  annotations = AnnotationUtil.getAnnotations(param);
-            if (annotations.containsKey(Named.class)) {
-                AnnotationDescription named = annotations.get(Named.class);
-                info = context.findByNamed(named.getProperty(String.class,"value"));
-            }
-            if (info == null && annotations.containsKey(Resource.class)) {
-                AnnotationDescription resource = annotations.get(Resource.class);
-                String named = resource.getProperty(String.class,"name");
-                Class clazz = resource.getProperty(Class.class,"type");
-                if (!named.isBlank()) {
-                    info = context.findByNamed(named);
-                } else {
+        ComponentInfo parsed = null;
+        if (factory != null) {
+            // 存在Factor的注解描述，是一般的工厂方法。
+            ComponentInfo[] dependInfos = new ComponentInfo[method.getParameterCount()];
+            Parameter[] params = method.getParameters();
+            for (int idx = 0; idx < dependInfos.length; idx ++) {
+                ComponentInfo info = null;
+                Parameter param = params[idx];
+                Map<Class,AnnotationDescription>  annotations = AnnotationUtil.getAnnotations(param);
+                String name = parseName(annotations);
+                if (name != null) {
+                    info = context.findByNamed(name);
+                }
+                if (info == null && annotations.containsKey(Resource.class)) {
+                    AnnotationDescription resource = annotations.get(Resource.class);
+                    Class clazz = resource.getProperty(Class.class,"type");
                     info = context.findByClass(clazz);
+                    if (info == null) {
+                        info = parseInternal(param.getType(),context,container);
+                        if (info == null) {
+                            throw new RuntimeException("无法解析组件，因为缺少依赖：" + param);
+                        }
+                    }
                 }
                 if (info == null) {
                     info = parseInternal(param.getType(),context,container);
@@ -91,102 +97,91 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                         throw new RuntimeException("无法解析组件，因为缺少依赖：" + param);
                     }
                 }
+                dependInfos[idx] = info;
             }
-            if (info == null) {
-                info = parseInternal(param.getType(),context,container);
-                if (info == null) {
-                    throw new RuntimeException("无法解析组件，因为缺少依赖：" + param);
+            String named = method.getName();
+
+            Method initMethod = null;
+            Method destroyMethod = null;
+
+            try {
+                if (!factory.initMethod().isBlank()) {
+                    initMethod = type.getMethod(factory.initMethod());
                 }
+                if (!factory.destroyMethod().isBlank()) {
+                    destroyMethod = type.getMethod(factory.destroyMethod());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("无法获取指定的方法",e);
             }
-            dependInfos[idx] = info;
-        }
 
-        String named = method.getName();
-        ComponentInfo parsed = null;
-
-        Method initMethod = null;
-        Method destroyMethod = null;
-
-        try {
-            if (!factory.initMethod().isBlank()) {
-                initMethod = type.getMethod(factory.initMethod());
+            if (factory.multiple() == Object.class) {
+                // 非多实现
+                parsed = new ComponentInfo(type,named,factory.scope());
+            } else {
+                parsed = new ComponentInfo(factory.multiple(),type,named,factory.scope());
             }
-            if (!factory.destroyMethod().isBlank()) {
-                destroyMethod = type.getMethod(factory.destroyMethod());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("无法获取指定的方法",e);
-        }
+            parsed.setInitMethod(initMethod);
+            parsed.setDestroyMethod(destroyMethod);
+            parsed.setFactory(method.getDeclaringClass());
+            parsed.setFactoryMethod(method);
+            parsed.setFactoryInfo(new FactoryDependencyInfo(dependInfos,Modifier.isStatic(method.getModifiers())));
+            container.add(parsed);
 
-        if (factory.multiple() == Object.class) {
-            // 非多实现
-            parsed = new ComponentInfo(type,named,factory.scope());
+            context.register(parsed);
+
         } else {
-            parsed = new ComponentInfo(factory.multiple(),type,named,factory.scope());
-        }
-        parsed.setInitMethod(initMethod);
-        parsed.setDestroyMethod(destroyMethod);
-        parsed.setFactory(method.getDeclaringClass());
-        parsed.setFactoryMethod(method);
-        parsed.setFactoryInfo(new FactoryDependencyInfo(dependInfos,Modifier.isStatic(method.getModifiers())));
-        container.add(parsed);
+            // 一般来说是Provider会在这里。
+            // 无Factor注解，进行默认解析
 
-        context.register(parsed);
+            Class source = method.getDeclaringClass();
+            Class provided = method.getReturnType();
+
+            // 解析工厂提供的组件
+            Map<Class,AnnotationDescription> anno = AnnotationUtil.getAnnotations(provided);
+            String providedName = parseNameOrDefault(anno,provided);
+            Class providedScope = parseScope(anno);
+            // 创建提供的组件信息
+            parsed = new ComponentInfo(provided,providedName,providedScope);
+            parsed.setFactory(source);
+            parsed.setFactoryMethod(method);
+            parsed.setFactoryInfo(new FactoryDependencyInfo(new ComponentInfo[0],false));
+            // 注册组件信息
+            context.register(parsed);
+            container.add(parsed);
+        }
+
+        // 调用Listener
+        if (context instanceof Listenable) {
+            Listenable<AfterRegisterListener> listenable = (Listenable<AfterRegisterListener>)context;
+            parsed = this.invokeListeners(parsed,listenable.getAllListeners());
+        }
 
         return parsed;
     }
 
     private ComponentInfo parseInternal(Class source, DependencyRegisterContext context, List<ComponentInfo> container) {
         Map<Class,AnnotationDescription> annotations = AnnotationUtil.getAnnotations(source);
-        // 解析组件名
-        AnnotationDescription named = annotations.get(Named.class);
-        if (named != null) {
-            // 查找已注册的数据
-            ComponentInfo info = context.findByNamed(named.getProperty(String.class,"value"));
-            if (info != null) {
-                // 已存在，直接返回
-                return info;
-            }
-        }
-        // 按类查找
-        ComponentInfo info = context.findByClass(source);
+        // 查找已经存在的组件
+        ComponentInfo info = this.getExists(source,annotations,context);
         if (info != null) {
             // 组件已存在，直接返回
             return info;
         }
 
         // 解析Scope
-        AnnotationDescription scopeDesc = AnnotationUtil.findAnnotationIn(annotations,Scope.class);
-        Class scope = null;
-        if (scopeDesc == null) {
-            // 默认为singleton的Scope
-            scope = Singleton.class;
-        } else {
-            scope = scopeDesc.getDeclareOn().getAnnotation();
-        }
+        Class scope = this.parseScope(annotations);
 
         // 接口或抽象类多实现的支持
         AnnotationDescription multiple = annotations.get(MultipleImplement.class);
 
         // 创建组件信息
         ComponentInfo parsed = null;
-
+        String name = parseNameOrDefault(annotations,source);
         if (annotations.containsKey(MultipleImplement.class)) {
             Class type = multiple.getProperty(Class.class,"value");
-            String name = null;
-            if (named != null){
-                name = named.getProperty(String.class,"value");
-            } else {
-                name = source.getName();
-            }
             parsed = new ComponentInfo(type,source, name , scope);
         } else {
-            String name = null;
-            if (named != null){
-                name = named.getProperty(String.class,"value");
-            } else {
-                name = source.getName();
-            }
             parsed = new ComponentInfo(source,name, scope);
         }
 
@@ -212,7 +207,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         }
 
         // 解析方法注入
-        List<Method> methods = ReflectionUtil.findDependencyMethods(source);
+        List<Method> methods = ReflectionUtil.findAllMethods(source);
         for (Method method: methods) {
             if (!AnnotationUtil.hasDependency(method)) {
                 Map<Class, AnnotationDescription> descriptionMap = AnnotationUtil.getAnnotations(method);
@@ -244,6 +239,16 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             parsed.getDependencyInfos().add(dependencyInfo);
         }
 
+        if (parsed.isFactoryComponent()) {
+            try {
+                Method getMethod = source.getMethod("get");
+                // 解析Provider组件提供的组件
+                parseInternalFactory(getMethod,context,container);
+            } catch (Exception e) {
+                throw new RuntimeException("can not find factor method.");
+            }
+        }
+
         // 完成组件解析
         parsed.setResolved(true);
         // 调用Listener
@@ -254,6 +259,58 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
         return parsed;
 
+    }
+
+    private ComponentInfo getExists(Class source,Map<Class,AnnotationDescription> annotations,DependencyRegisterContext context) {
+        // 解析组件名
+        AnnotationDescription named = annotations.get(Named.class);
+        if (named != null) {
+            // 查找已注册的数据
+            ComponentInfo info = context.findByNamed(named.getProperty(String.class,"value"));
+            if (info != null) {
+                // 已存在，直接返回
+                return info;
+            }
+        }
+        // 按类查找
+        ComponentInfo info = context.findByClass(source);
+        if (info != null) {
+            // 组件已存在，直接返回
+            return info;
+        }
+        return null;
+    }
+
+    private Class parseScope(Map<Class,AnnotationDescription> descriptionMap) {
+        AnnotationDescription scopeDesc = AnnotationUtil.findAnnotationIn(descriptionMap,Scope.class);
+        Class scope = null;
+        if (scopeDesc == null) {
+            // 默认为singleton的Scope
+            scope = Singleton.class;
+        } else {
+            scope = scopeDesc.getDeclareOn().getAnnotation();
+        }
+        return scope;
+    }
+
+    private String parseNameOrDefault(Map<Class,AnnotationDescription> descriptionMap, Class source) {
+        String name = parseName(descriptionMap);
+        if (name == null) {
+            return source.getName();
+        }
+        return name;
+    }
+
+    private String parseName(Map<Class,AnnotationDescription> descriptionMap) {
+        AnnotationDescription named = AnnotationUtil.findAnnotationIn(descriptionMap,Named.class);
+        if (named != null) {
+            return named.getProperty(String.class,"value");
+        }
+        named = AnnotationUtil.findAnnotationIn(descriptionMap,Resource.class);
+        if (named != null) {
+            return named.getProperty(String.class,"name");
+        }
+        return null;
     }
 
 }
