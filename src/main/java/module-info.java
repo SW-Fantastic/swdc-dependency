@@ -8,5 +8,6 @@ module swdc.application.environment {
     exports org.swdc.dependency.utils;
     exports org.swdc.dependency.annotations;
     exports org.swdc.dependency.listeners;
+    exports org.swdc.dependency.interceptor;
 
 }
