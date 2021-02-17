@@ -87,11 +87,6 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
 
         }
 
-        // 禁止返回Factory组件
-        if (info.isFactoryComponent()) {
-            return null;
-        }
-
         DependencyScope scope = getScope(info.getScope());
         Object target = scope.getByClass(clazz);
 
@@ -116,7 +111,48 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
             }
         }
 
+        // 禁止返回Factory组件
+        if (info.isFactoryComponent() || info.isInterceptor()) {
+            return null;
+        }
+
         return (T)target;
+    }
+
+    @Override
+    public <T> T getInterceptor(Class<T> clazz) {
+        checkStatus();
+        ComponentInfo info = registryContext.findByClass(clazz);
+        if (info == null) {
+            parser.parse(clazz,registryContext);
+            info = registryContext.findByClass(clazz);
+
+            if(info == null) {
+                throw new RuntimeException("无法创建组件，解析失败：" + clazz.getName());
+            }
+
+        }
+        if (!info.isInterceptor() || info.isMultiple()) {
+            return null;
+        }
+        DependencyScope scope = getScope(info.getScope());
+        Object target = scope.getByClass(clazz);
+
+        if (target != null) {
+            // 组件已存在，直接返回
+            return (T)target;
+        }
+
+        target = create(info);
+        scope.put(info.getName(),clazz,target);
+        if (info.getInitMethod() != null) {
+            try {
+                info.getInitMethod().invoke(target);
+            } catch (Exception e) {
+                throw new RuntimeException("无法初始化组件：" + info.getInitMethod(),e);
+            }
+        }
+        return (T) target;
     }
 
     @Override

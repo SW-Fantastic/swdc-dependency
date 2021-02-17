@@ -5,9 +5,10 @@ import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.swdc.dependency.annotations.Dependency;
-import org.swdc.dependency.annotations.Factory;
-import org.swdc.dependency.annotations.Prototype;
+import org.swdc.dependency.annotations.*;
+import org.swdc.dependency.interceptor.AspectAt;
+import org.swdc.dependency.interceptor.InvocationPoint;
+import org.swdc.dependency.interceptor.ProcessPoint;
 
 public class AnnotationEnvironmentTest {
 
@@ -118,6 +119,46 @@ public class AnnotationEnvironmentTest {
 
     }
 
+    @Interceptor
+    public static class Advice {
+
+        @Aspect(byNameRegex = "test*",at = AspectAt.BEFORE)
+        public void hello(InvocationPoint point) {
+            System.out.println("正在执行方法：" + point.getMethod().getName());
+        }
+
+        @Aspect(byNameRegex = "test*",at = AspectAt.AFTER)
+        public void helloExit(InvocationPoint point) {
+            System.out.println("方法已经结束：" + point.getMethod().getName());
+        }
+
+        @Aspect(byNameRegex = "test*",at = AspectAt.AROUND)
+        public Object helloAround(ProcessPoint processPoint) throws Throwable {
+            System.out.println("方法（Around）正在开始：" + processPoint.getMethod().getName());
+            Object obj = processPoint.process();
+            System.out.println("方法（Around）已经结束：" + processPoint.getMethod().getName());
+            return obj;
+        }
+
+        @Aspect(byNameRegex = "test*",at = AspectAt.AROUND)
+        public Object helloAroundMultiple(ProcessPoint processPoint) throws Throwable {
+            System.out.println("方法（AroundMultiple）正在开始：" + processPoint.getMethod().getName());
+            Object obj = processPoint.process();
+            System.out.println("方法（AroundMultiple）已经结束：" + processPoint.getMethod().getName());
+            return obj;
+        }
+
+    }
+
+    @With(aspectBy = Advice.class)
+    public static class TestAdvice {
+
+        public void testMethod() {
+            System.out.println("test");
+        }
+
+    }
+
     @Test
     public void testInjectConstructor() {
         AnnotationEnvironment environment = new AnnotationEnvironment();
@@ -196,6 +237,14 @@ public class AnnotationEnvironmentTest {
         ConstructorTestClass constructorTestClass = context.getByClass(ConstructorTestClass.class);
         Assertions.assertEquals(context.getByClass(NoArgConstructorClass.class),constructorTestClass.constructorClass);
         Assertions.assertNull(context.getByClass(TestProvider.class));
+    }
+
+    @Test
+    public void testAdvice() {
+        AnnotationLoader loader = new AnnotationLoader();
+        DependencyContext context = loader.load();
+        TestAdvice advice = context.getByClass(TestAdvice.class);
+        advice.testMethod();
     }
 
 }

@@ -31,10 +31,10 @@
  - [x] 对父类的字段和方法进行注入
  - [x] 组件声明
  - [x] 自定义Scope（增加了Prototype的Scope）
- 
-（未经过全面测试 - 尚不稳定的功能）
-
  - [x] 后处理接口
+ - [x] AOP支持（Before，After，Around等）
+
+
 
 
 （尚未实现）

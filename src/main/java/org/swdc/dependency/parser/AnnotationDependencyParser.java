@@ -4,20 +4,15 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
 import jakarta.inject.Named;
-import jakarta.inject.Provider;
 import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 import org.swdc.dependency.DependencyParser;
 import org.swdc.dependency.DependencyRegisterContext;
 import org.swdc.dependency.Listenable;
-import org.swdc.dependency.annotations.Dependency;
-import org.swdc.dependency.annotations.Factory;
-import org.swdc.dependency.annotations.MultipleImplement;
+import org.swdc.dependency.annotations.*;
+import org.swdc.dependency.interceptor.AspectAt;
 import org.swdc.dependency.listeners.AfterRegisterListener;
-import org.swdc.dependency.registry.ComponentInfo;
-import org.swdc.dependency.registry.ConstructorInfo;
-import org.swdc.dependency.registry.DependencyInfo;
-import org.swdc.dependency.registry.FactoryDependencyInfo;
+import org.swdc.dependency.registry.*;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.dependency.utils.ReflectionUtil;
@@ -206,15 +201,49 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             break;
         }
 
+
         // 解析方法注入
         List<Method> methods = ReflectionUtil.findAllMethods(source);
         for (Method method: methods) {
             if (!AnnotationUtil.hasDependency(method)) {
                 Map<Class, AnnotationDescription> descriptionMap = AnnotationUtil.getAnnotations(method);
                 if (descriptionMap.containsKey(PostConstruct.class)) {
+                    // 解析初始化
                     parsed.setInitMethod(method);
                 } else if (descriptionMap.containsKey(PreDestroy.class)) {
+                    // 解析销毁方法
                     parsed.setDestroyMethod(method);
+                } else if (descriptionMap.containsKey(Aspect.class)) {
+                    // 解析AOP注解
+                    InterceptorInfo interceptorInfo = new InterceptorInfo();
+                    AnnotationDescription aspect = AnnotationUtil.findAnnotationIn(descriptionMap, Aspect.class);
+                    if (!parsed.isInterceptor()) {
+                        parsed.setInterceptor(true);
+                    }
+                    String nameRegex = aspect.getProperty(String.class,"byNameRegex");
+                    if (nameRegex != null && !nameRegex.isBlank()) {
+                        interceptorInfo.setNamePattern(nameRegex);
+                    }
+                    Class annotationType = aspect.getProperty(Class.class,"byAnnotation");
+                    if (annotationType != null && annotationType != Object.class) {
+                        interceptorInfo.setAnnotationType(annotationType);
+                    }
+                    Class[] returnTypes = aspect.getProperty(Class[].class,"byReturnType");
+                    if (returnTypes != null && returnTypes[0] != Object.class) {
+                        interceptorInfo.setReturnType(returnTypes);
+                    }
+                    Class annotation = aspect.getProperty(Class.class,"byAnnotation");
+                    if (annotation != Object.class) {
+                        interceptorInfo.setAnnotationType(annotation);
+                    }
+                    AnnotationDescription order = AnnotationUtil.findAnnotationIn(descriptionMap,Order.class);
+                    AspectAt aspectAt = aspect.getProperty(AspectAt.class,"at");
+                    interceptorInfo.setAt(aspectAt);
+                    interceptorInfo.setMethod(method);
+                    if (order != null) {
+                        interceptorInfo.setOrder(order.getProperty(int.class,"value"));
+                    }
+                    parsed.addInterceptorInfo(interceptorInfo);
                 }
                 continue;
             }
@@ -246,6 +275,23 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                 parseInternalFactory(getMethod,context,container);
             } catch (Exception e) {
                 throw new RuntimeException("can not find factor method.");
+            }
+        }
+
+
+        // 解析AOP
+        AnnotationDescription aspect = AnnotationUtil.findAnnotationIn(annotations,With.class);
+        if (aspect != null) {
+            Class[] interceptors = aspect.getProperty(Class[].class, "aspectBy");
+            for (Class clazz : interceptors) {
+                ComponentInfo aspectInfo = context.findByClass(clazz);
+                if (aspectInfo == null) {
+                    aspectInfo = this.parseInternal(clazz,context,container);
+                }
+                if (aspectInfo == null) {
+                    continue;
+                }
+                parsed.addAdviceBy(aspectInfo);
             }
         }
 

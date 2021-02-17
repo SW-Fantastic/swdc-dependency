@@ -1,13 +1,16 @@
 package org.swdc.dependency;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.implementation.InvocationHandlerAdapter;
+import net.bytebuddy.matcher.ElementMatchers;
+import org.swdc.dependency.interceptor.AspectHandler;
+import org.swdc.dependency.interceptor.RuntimeAspectInfo;
 import org.swdc.dependency.listeners.AfterCreationListener;
-import org.swdc.dependency.registry.ComponentInfo;
-import org.swdc.dependency.registry.ConstructorInfo;
-import org.swdc.dependency.registry.DependencyInfo;
-import org.swdc.dependency.registry.FactoryDependencyInfo;
+import org.swdc.dependency.registry.*;
 import org.swdc.dependency.scopes.CacheDependencyHolder;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -15,10 +18,21 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * 组件工厂。
+ *
+ * 这个类专注于如何创建一个组件。
+ */
 public abstract class EnvironmentFactory implements DependencyFactory {
+
+
+    /**
+     * AOP的处理所需要的ByteBuddy
+     */
+    private ByteBuddy byteBuddy = new ByteBuddy();
 
     /**
      * 未创建完成的组件缓存
@@ -48,8 +62,65 @@ public abstract class EnvironmentFactory implements DependencyFactory {
             target = createByConstructor(info);
         }
         this.initialize(info,target);
+
+        if (info.getAdviceBy() != null && !info.getAdviceBy().isEmpty()) {
+           target = this.withInterceptor(target, info.getAdviceBy());
+        }
+
         holder.complete(info);
         return target;
+    }
+
+    /**
+     * 执行AOP的增强处理。
+     * @param target 目标对象
+     * @param interceptors 切面的组件数据
+     * @param <T> 类型
+     * @return 经过增强的代理对象
+     */
+    private <T> T withInterceptor(Object target, List<ComponentInfo> interceptors) {
+        List<Method> methods = ReflectionUtil.findAllMethods(target.getClass());
+        Map<Method,List<RuntimeAspectInfo>> processPoints = new HashMap<>();
+
+        // 整理AOP拦截数据
+        List<InterceptorInfo> infos = interceptors.stream()
+                .map(ComponentInfo::getInterceptorInfos)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        for (Method method: methods) {
+            // 过滤，匹配拦截器中对应的拦截方法
+            List<RuntimeAspectInfo> proxies = infos.stream()
+                    .filter(i -> i.match(method))
+                    .map(i -> {
+                        // 创建方法的执行点
+                        Class interceptorClazz = i.getMethod().getDeclaringClass();
+                        Object interceptor = this.getInterceptor(interceptorClazz);
+                        if (interceptorClazz == null) {
+                            return null;
+                        }
+                        return new RuntimeAspectInfo(interceptor,method,i.getMethod(),i.getAt(),i.getOrder());
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            processPoints.put(method,proxies);
+        }
+
+        AspectHandler handler = new AspectHandler(target,processPoints);
+
+        try {
+            target = byteBuddy.subclass(target.getClass())
+                    .method(ElementMatchers.any())
+                    .intercept(InvocationHandlerAdapter.of(handler))
+                    .make()
+                    .load(target.getClass().getModule().getClassLoader())
+                    .getLoaded()
+                    .getConstructor()
+                    .newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("无法为组件：" + target.getClass() + "提供增强，代理对象创建失败！",e);
+        }
+        return (T)target;
     }
 
     @Override
@@ -109,6 +180,12 @@ public abstract class EnvironmentFactory implements DependencyFactory {
         return target;
     }
 
+    /**
+     * 通过构造方法创建组件
+     * @param info 组件信息
+     * @param <T> 组件类型
+     * @return 创建好的未初始化的组件
+     */
     private <T> T createByConstructor(ComponentInfo info) {
 
         if (info.getConstructorInfo() != null) {
@@ -156,6 +233,13 @@ public abstract class EnvironmentFactory implements DependencyFactory {
         }
     }
 
+    /**
+     * 通过工厂的方式创建对象。
+     *
+     * @param info 组件信息
+     * @param <T> 类型
+     * @return 创建好的未初始化的组件。
+     */
     private  <T> T createByFactory(ComponentInfo info) {
         FactoryDependencyInfo dep = info.getFactoryInfo();
         Method method = info.getFactoryMethod();

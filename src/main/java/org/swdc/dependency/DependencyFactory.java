@@ -37,4 +37,12 @@ public interface DependencyFactory extends DependencyContext {
      */
     <T> T getFactory(Class clazz);
 
+    /**
+     * 获取AOP的增强对象
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    <T> T getInterceptor(Class<T> clazz);
+
 }

@@ -1,6 +1,5 @@
 package org.swdc.dependency.utils;
 
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,9 +9,24 @@ import java.util.Map;
  */
 public class AnnotationDescription {
 
+    /**
+     * 此对象描述的注解的类型
+     */
     private Class annotation;
+
+    /**
+     * 此注解对象包含的父注解和描述对象
+     */
     private Map<Class,AnnotationDescription> annotations;
+
+    /**
+     * 此注解的父注解对象
+     */
     private AnnotationDescription declareOn;
+
+    /**
+     * 此注解含有的属性
+     */
     private Map<TypedKey,Object> properties = new HashMap<>();
 
     public AnnotationDescription(Class annotation) {

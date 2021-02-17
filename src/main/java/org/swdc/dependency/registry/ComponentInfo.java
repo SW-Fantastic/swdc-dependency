@@ -6,6 +6,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 组件描述符
+ *
+ * 用来说明一个组件应该怎么创建，有哪些依赖，
+ * 是不是工厂和切面等特殊组件之类的。
+ */
 public class ComponentInfo {
 
     /**
@@ -78,6 +84,22 @@ public class ComponentInfo {
      */
     private Method destroyMethod;
 
+    /**
+     * 是否是一个切面
+     */
+    private boolean interceptor;
+
+    /**
+     * 如果本组件是切面，这里是切面方法的描述
+     */
+    private List<InterceptorInfo> interceptorInfos = new ArrayList<>();
+
+    /**
+     * 如果本组件含有With注解，被切面AOP，
+     * 这里应该包含切面的组件数据
+     */
+    private List<ComponentInfo> adviceBy = new ArrayList<>();
+
     public ComponentInfo(Class clazz, String name, Class scope) {
         this.clazz = clazz;
         this.scope = scope;
@@ -89,6 +111,27 @@ public class ComponentInfo {
         this.multiple = true;
         this.abstractClazz = abstractClazz;
     }
+
+    /**
+     * 给当前的组件添加一个切面
+     * @param info 切面的组件数据
+     */
+    public void addAdviceBy(ComponentInfo info) {
+        if (!info.isInterceptor()) {
+            return;
+        }
+        adviceBy.add(info);
+    }
+
+    /**
+     * 当前组件是一个切面，为切面组件添加切面的方法描述。
+     * @param interceptorInfo 切面方法的描述
+     */
+    public void addInterceptorInfo(InterceptorInfo interceptorInfo) {
+        this.interceptorInfos.add(interceptorInfo);
+    }
+
+    // -------------------------Getter 和 Setter---------------------------------
 
     public boolean isRegistered() {
         return registered;
@@ -180,6 +223,22 @@ public class ComponentInfo {
 
     public boolean isFactoryComponent() {
         return Provider.class.isAssignableFrom(clazz);
+    }
+
+    public boolean isInterceptor() {
+        return interceptor;
+    }
+
+    public void setInterceptor(boolean interceptor) {
+        this.interceptor = interceptor;
+    }
+
+    public List<InterceptorInfo> getInterceptorInfos() {
+        return interceptorInfos;
+    }
+
+    public List<ComponentInfo> getAdviceBy() {
+        return adviceBy;
     }
 
 }
