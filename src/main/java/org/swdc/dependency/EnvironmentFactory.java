@@ -64,7 +64,7 @@ public abstract class EnvironmentFactory implements DependencyFactory {
         this.initialize(info,target);
 
         if (info.getAdviceBy() != null && !info.getAdviceBy().isEmpty()) {
-           target = this.withInterceptor(target, info.getAdviceBy());
+           target = this.withInterceptor(info, target, info.getAdviceBy());
         }
 
         holder.complete(info);
@@ -78,8 +78,8 @@ public abstract class EnvironmentFactory implements DependencyFactory {
      * @param <T> 类型
      * @return 经过增强的代理对象
      */
-    private <T> T withInterceptor(Object target, List<ComponentInfo> interceptors) {
-        List<Method> methods = ReflectionUtil.findAllMethods(target.getClass());
+    private <T> T withInterceptor(ComponentInfo info,Object target, List<ComponentInfo> interceptors) {
+        List<Method> methods = ReflectionUtil.findAllMethods(info.getClazz());
         Map<Method,List<RuntimeAspectInfo>> processPoints = new HashMap<>();
 
         // 整理AOP拦截数据

@@ -278,9 +278,11 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             }
         }
 
-
         // 解析AOP
         AnnotationDescription aspect = AnnotationUtil.findAnnotationIn(annotations,With.class);
+        if (parsed.isMultiple() && aspect == null) {
+            aspect = AnnotationUtil.findAnnotation(parsed.getAbstractClazz(),With.class);
+        }
         if (aspect != null) {
             Class[] interceptors = aspect.getProperty(Class[].class, "aspectBy");
             for (Class clazz : interceptors) {
