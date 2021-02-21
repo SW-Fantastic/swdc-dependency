@@ -1,5 +1,5 @@
 # application - component
-
+[![Release](https://jitpack.io/v/SW-Fantastic/swdc-dependency.svg)](https://jitpack.io/#SW-Fantastic/swdc-dependency)
 提供组件的DI功能，这是一个遵守javax.inject的注入实现。
 此组件现在处于开发中，最终将会通过JitPack提供。
 
@@ -21,6 +21,25 @@
 会有，大多数的注入就是完全根据注解来完成，所以只需要关注注解就行啦。
 
 以后我想为了致敬spring，可能会加入xml之类的其他类型的支持。
+
+## 如何使用
+添加以下仓库：
+```xml
+<repositories>
+	<repository>
+	  <id>jitpack.io</id>
+	  <url>https://jitpack.io</url>
+	</repository>
+</repositories>
+```
+然后使用此Maven：
+```xml
+<dependency>
+	 <groupId>com.github.SW-Fantastic</groupId>
+	 <artifactId>swdc-dependency</artifactId>
+	 <version>版本号</version>
+</dependency>
+```
 
 ## 进展
 
