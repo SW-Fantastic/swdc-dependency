@@ -1,7 +1,14 @@
 package org.swdc.dependency;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ScanResult;
+import jakarta.inject.Scope;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
+import org.swdc.dependency.utils.AnnotationUtil;
+
+import java.util.List;
 
 public class AnnotationLoader implements EnvironmentLoader<AnnotationEnvironment> {
 
@@ -45,6 +52,19 @@ public class AnnotationLoader implements EnvironmentLoader<AnnotationEnvironment
             return null;
         }
         annotationEnvironment.registerComponent(component);
+        return this;
+    }
+
+    @Override
+    public AnnotationLoader withPackage(String packageName) {
+        ClassGraph graph = new ClassGraph();
+        ScanResult result = graph.enableAllInfo()
+                .acceptPackages(packageName)
+                .scan();
+        List<Class<?>> classList = result.getAllStandardClasses().loadClasses();
+        for (Class clazz: classList){
+            this.annotationEnvironment.registerComponent(clazz);
+        }
         return this;
     }
 

@@ -3,12 +3,16 @@ package org.swdc.dependency;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import net.bytebuddy.jar.asm.ClassReader;
+import net.bytebuddy.jar.asm.ModuleVisitor;
+import net.bytebuddy.jar.asm.Opcodes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.swdc.dependency.annotations.*;
 import org.swdc.dependency.interceptor.AspectAt;
 import org.swdc.dependency.interceptor.InvocationPoint;
 import org.swdc.dependency.interceptor.ProcessPoint;
+import org.swdc.dependency.testpkg.TestAC1;
 
 public class AnnotationEnvironmentTest {
 
@@ -245,6 +249,25 @@ public class AnnotationEnvironmentTest {
         DependencyContext context = loader.load();
         TestAdvice advice = context.getByClass(TestAdvice.class);
         advice.testMethod();
+    }
+
+    @Test
+    public void testMultiple() {
+        AnnotationLoader loader = new AnnotationLoader().withComponent(TestAC1.class);
+        DependencyContext context = loader.load();
+
+        Assertions.assertNotNull(context.getByName("testA"));
+        Assertions.assertNotNull(context.getByName("testB"));
+        Assertions.assertNotNull(context.getByAbstract(TestAC1.class));
+    }
+
+    @Test
+    public void testPackage() {
+        AnnotationLoader loader = new AnnotationLoader().withPackage("org.swdc.dependency.testpkg");
+        DependencyContext context = loader.load();
+        Assertions.assertNotNull(context.getByName("testA"));
+        Assertions.assertNotNull(context.getByName("testB"));
+        Assertions.assertNotNull(context.getByAbstract(TestAC1.class));
     }
 
 }

@@ -31,8 +31,9 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
     public List<ComponentInfo> parse(Class source, DependencyRegisterContext context) {
 
         List<ComponentInfo> list = new ArrayList<>();
+        Map<Class, AnnotationDescription> annotations = AnnotationUtil.getAnnotations(source);
 
-        if (AnnotationUtil.findAnnotation(source,Dependency.class) != null) {
+        if (AnnotationUtil.findAnnotationIn(annotations,Dependency.class) != null) {
             // 检查和处理声明类型的组件定义
             List<Method> methods = Stream.of(source.getMethods())
                     .filter(m -> AnnotationUtil.findAnnotation(m,Factory.class) != null)
@@ -43,6 +44,12 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     // 解析组件声明
                     this.parseInternalFactory(method,context,list);
                 }
+            }
+        } else if (AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class) != null){
+            AnnotationDescription impl = AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class);
+            Class[] classes = impl.getProperty(Class[].class,"value");
+            for (Class clazz: classes) {
+                this.parseInternal(clazz,context,list);
             }
         } else {
             // 解析普通的组件信息

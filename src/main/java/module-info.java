@@ -1,8 +1,9 @@
-module swdc.application.environment {
+module swdc.application.dependency {
 
     requires jakarta.inject;
     requires jakarta.annotation;
     requires net.bytebuddy;
+    requires io.github.classgraph;
 
     exports org.swdc.dependency;
     exports org.swdc.dependency.utils;

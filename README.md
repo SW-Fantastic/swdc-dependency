@@ -33,13 +33,7 @@
  - [x] 自定义Scope（增加了Prototype的Scope）
  - [x] 后处理接口
  - [x] AOP支持（Before，After，Around等）
-
-
-
-
-（尚未实现）
-
- - [ ] 配置注入（需要配置处理模块，还没有做） 
+ - [x] Package扫描功能（基于io.github.classgraph）
 
 ## Example
 
