@@ -37,7 +37,7 @@
 <dependency>
 	 <groupId>com.github.SW-Fantastic</groupId>
 	 <artifactId>swdc-dependency</artifactId>
-	 <version>版本号</version>
+	 <version>0.1.2</version>
 </dependency>
 ```
 
