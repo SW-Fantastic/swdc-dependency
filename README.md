@@ -1,5 +1,7 @@
 # application - component
+
 [![Release](https://jitpack.io/v/SW-Fantastic/swdc-dependency.svg)](https://jitpack.io/#SW-Fantastic/swdc-dependency)
+
 提供组件的DI功能，这是一个遵守javax.inject的注入实现。
 此组件现在处于开发中，最终将会通过JitPack提供。
 
