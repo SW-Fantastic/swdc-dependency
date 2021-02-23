@@ -1,5 +1,6 @@
-package org.swdc.dependency;
+package org.swdc.dependency.parser;
 
+import org.swdc.dependency.registry.DependencyRegisterContext;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.registry.ComponentInfo;
 

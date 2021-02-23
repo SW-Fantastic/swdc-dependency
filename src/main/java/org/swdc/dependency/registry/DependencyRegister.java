@@ -1,4 +1,4 @@
-package org.swdc.dependency;
+package org.swdc.dependency.registry;
 
 import org.swdc.dependency.registry.ComponentInfo;
 

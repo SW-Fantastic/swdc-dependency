@@ -6,6 +6,8 @@ import io.github.classgraph.ScanResult;
 import jakarta.inject.Scope;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
+import org.swdc.dependency.registry.ComponentInfo;
+import org.swdc.dependency.registry.DependencyRegisterContext;
 import org.swdc.dependency.utils.AnnotationUtil;
 
 import java.util.List;
@@ -65,6 +67,24 @@ public class AnnotationLoader implements EnvironmentLoader<AnnotationEnvironment
         for (Class clazz: classList){
             this.annotationEnvironment.registerComponent(clazz);
         }
+        return this;
+    }
+
+    @Override
+    public AnnotationLoader layerExport(Class clazz) {
+        annotationEnvironment.exportByClass(clazz);
+        return this;
+    }
+
+    @Override
+    public AnnotationLoader layerExport(String name) {
+        annotationEnvironment.exportByName(name);
+        return this;
+    }
+
+    @Override
+    public AnnotationLoader layerExportAbstract(Class clazz) {
+        annotationEnvironment.exportByAbstract(clazz);
         return this;
     }
 

@@ -1,4 +1,4 @@
-package org.swdc.dependency;
+package org.swdc.dependency.listeners;
 
 import org.swdc.dependency.annotations.Order;
 import org.swdc.dependency.utils.AnnotationDescription;

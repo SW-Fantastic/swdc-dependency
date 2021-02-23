@@ -1,6 +1,5 @@
 package org.swdc.dependency.registry;
 
-import org.swdc.dependency.DependencyRegisterContext;
 import org.swdc.dependency.Listenable;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 

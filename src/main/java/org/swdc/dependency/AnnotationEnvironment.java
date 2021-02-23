@@ -5,9 +5,12 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.swdc.dependency.annotations.Dependency;
 import org.swdc.dependency.annotations.ScopeImplement;
+import org.swdc.dependency.layer.Layer;
+import org.swdc.dependency.layer.Layerable;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.parser.AnnotationDependencyParser;
+import org.swdc.dependency.parser.DependencyParser;
 import org.swdc.dependency.registry.*;
 import org.swdc.dependency.scopes.SingletonDependencyScope;
 import org.swdc.dependency.utils.AnnotationDescription;
@@ -18,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class AnnotationEnvironment extends EnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener> {
+public class AnnotationEnvironment extends EnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener>, Layerable {
 
     private Map<Class, DependencyScope> scopes;
 
@@ -27,9 +30,13 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
 
     private Map<Class, Object> factoryMap;
 
+    private List<ComponentInfo> exports = new ArrayList<>();
+
     private List<AfterCreationListener> afterCreationListeners;
 
     private AtomicBoolean closed = new AtomicBoolean(false);
+
+    private Layer layers;
 
     public AnnotationEnvironment() {
         registryContext = new DefaultDependencyRegistryContext();
@@ -76,6 +83,14 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
     @Override
     public <T> T getByClass(Class<T> clazz) {
         checkStatus();
+
+        if (layers != null) {
+            Object target = layers.findParentByClass(clazz);
+            if (target != null) {
+                return (T)target;
+            }
+        }
+
         ComponentInfo info = registryContext.findByClass(clazz);
         if (info == null) {
             parser.parse(clazz,registryContext);
@@ -122,6 +137,14 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
     @Override
     public <T> T getInterceptor(Class<T> clazz) {
         checkStatus();
+
+        if (layers != null) {
+            Object target = layers.findParentInterceptor(clazz);
+            if (target != null) {
+                return (T)target;
+            }
+        }
+
         ComponentInfo info = registryContext.findByClass(clazz);
         if (info == null) {
             parser.parse(clazz,registryContext);
@@ -157,6 +180,14 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
 
     @Override
     public <T> T getFactory(Class clazz) {
+
+        if (layers != null) {
+            Object target = layers.findParentFactory(clazz);
+            if (target != null) {
+                return (T)target;
+            }
+        }
+
         Object factory = factoryMap.get(clazz);
         if (factory == null) {
             if (AnnotationUtil.findAnnotation(clazz, Dependency.class) != null) {
@@ -192,6 +223,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
 
     @Override
     public  <T> T getInternal(ComponentInfo info, Object object) {
+
         Object realComp = null;
         Map<Class, AnnotationDescription> objects = (Map<Class, AnnotationDescription>)object;
         if (!info.getName().equals(info.getClazz().getName())) {
@@ -245,6 +277,14 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
     @Override
     public <T> T getByName(String name) {
         checkStatus();
+
+        if (layers != null) {
+            T result = layers.findParentByName(name);
+            if (result != null) {
+                return result;
+            }
+        }
+
         ComponentInfo info = registryContext.findByNamed(name);
         if (info == null) {
             return null;
@@ -284,6 +324,14 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
     @Override
     public <T> List<T> getByAbstract(Class<T> parent) {
         checkStatus();
+
+        if (layers != null) {
+            List<T> result = layers.findParentByAbstract(parent);
+            if (result != null && result.size() > 0) {
+                return result;
+            }
+        }
+
         List<ComponentInfo> infoList = registryContext.findByAbstract(parent);
         if (infoList == null || infoList.size() == 0) {
             return Collections.emptyList();
@@ -327,7 +375,6 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public DependencyScope getScope(Class scopeType) {
@@ -394,4 +441,50 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         }
     }
 
+    @Override
+    public List<ComponentInfo> getExport() {
+        return exports.stream().collect(Collectors.toUnmodifiableList());
+    }
+
+    @Override
+    public void setImport(Layer layer) {
+        this.layers = layer;
+    }
+
+    @Override
+    public boolean contains(Class clazz) {
+        return registryContext.findByClass(clazz) != null;
+    }
+
+    @Override
+    public void exportByName(String name) {
+        ComponentInfo info = registryContext.findByNamed(name);
+        if (info != null) {
+            this.exports.add(info);
+        }
+    }
+
+    @Override
+    public void exportByClass(Class clazz) {
+        ComponentInfo info = registryContext.findByClass(clazz);
+        if (info == null) {
+            this.registerComponent(clazz);
+            info = registryContext.findByClass(clazz);
+        }
+        if (info != null) {
+            exports.add(info);
+        }
+    }
+
+    @Override
+    public void exportByAbstract(Class clazz) {
+        List<ComponentInfo> infoList = registryContext.findByAbstract(clazz);
+        if (infoList == null || infoList.size() == 0) {
+            this.registerComponent(clazz);
+            infoList = registryContext.findByAbstract(clazz);
+        }
+        if (infoList != null){
+            this.exports.addAll(infoList);
+        }
+    }
 }
