@@ -58,6 +58,15 @@ public class AnnotationLoader implements EnvironmentLoader<AnnotationEnvironment
     }
 
     @Override
+    public <C> EnvironmentLoader<AnnotationEnvironment> withInstance(Class<C> clazz, C instance) {
+        if (closed) {
+            return null;
+        }
+        annotationEnvironment.registerInstance(clazz,instance);
+        return this;
+    }
+
+    @Override
     public AnnotationLoader withPackage(String packageName) {
         ClassGraph graph = new ClassGraph();
         ScanResult result = graph.enableAllInfo()

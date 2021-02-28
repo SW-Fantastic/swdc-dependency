@@ -101,7 +101,7 @@ public class Layer implements DependencyLayer {
      * @param layerable 可分层Context
      * @return 本对象
      */
-    public Layer use(DependencyContext layerable) {
+    public Layer based(DependencyContext layerable) {
         if (!Layerable.class.isAssignableFrom(layerable.getClass())) {
             throw new RuntimeException("DependencyContext不支持分层。");
         }

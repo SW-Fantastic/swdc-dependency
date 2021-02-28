@@ -69,6 +69,26 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
     }
 
     @Override
+    public void registerInstance(Class component, Object instance) {
+        checkStatus();
+        ComponentInfo info = this.registryContext.findByClass(component);
+        if (info == null) {
+            parser.parse(component,this.registryContext);
+            info = this.registryContext.findByClass(component);
+        }
+        if (info != null) {
+            DependencyScope scope = this.getScope(info.getScope());
+            if (!info.getName().equals(component.getName())) {
+                if (info.isMultiple()) {
+                    scope.put(info.getName(),component,info.getAbstractClazz(),instance);
+                } else {
+                    scope.put(info.getName(),component,instance);
+                }
+            }
+        }
+    }
+
+    @Override
     public void registerCreationListener(AfterCreationListener listener) {
         checkStatus();
         this.addListener(listener);

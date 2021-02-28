@@ -4,8 +4,6 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.swdc.dependency.layer.Layer;
-import org.swdc.dependency.layer.LayerDependencyContext;
-import org.swdc.dependency.layer.Layerable;
 import org.swdc.dependency.testpkg.TestAC1;
 import org.swdc.dependency.testpkg.TestC1;
 import org.swdc.dependency.testpkg.TestC2;
@@ -45,18 +43,22 @@ public class LayerTest {
         DependencyContext appContext = new AnnotationLoader()
                 .load();
 
+        TestC1 c1 = new TestC1();
+
         // 封装的层
         DependencyContext context = new AnnotationLoader()
                 .withComponent(TestAC1.class)
+                .withInstance(TestC1.class,c1)
                 .layerExport(TestC1.class)
                 .load();
 
         // Layer分层
         DependencyContext layerContext = new Layer(appContext)
-                .use(context)
+                .based(context)
                 .asContext();
 
         Assertions.assertNotNull(layerContext.getByClass(NoArgConstructorClass.class));
+        Assertions.assertEquals(c1,layerContext.getByClass(TestC1.class));
 
         Assertions.assertNull(layerContext.getByClass(TestC2.class));
 

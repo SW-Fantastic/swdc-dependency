@@ -9,6 +9,7 @@ public interface EnvironmentLoader<T extends DependencyContext> {
     EnvironmentLoader<T> withDeclare(Class declare);
     EnvironmentLoader<T> withScope(DependencyScope scope);
     EnvironmentLoader<T> withComponent(Class component);
+    <C> EnvironmentLoader<T> withInstance(Class<C> clazz, C instance);
     EnvironmentLoader<T> withPackage(String packageName);
     EnvironmentLoader<T> layerExport(Class clazz);
     EnvironmentLoader<T> layerExport(String name);
