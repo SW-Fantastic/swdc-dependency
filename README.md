@@ -24,6 +24,9 @@
 
 以后我想为了致敬spring，可能会加入xml之类的其他类型的支持。
 
+此依赖注入环境支持Graal，通过GraalNativePlugin可以生成反射元数据，
+但是AOP暂时还不行，这个还需要等待Plugin的完善。
+
 ## 如何使用
 添加以下仓库：
 ```xml

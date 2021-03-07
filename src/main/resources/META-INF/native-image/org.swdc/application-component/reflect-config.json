@@ -1,0 +1,511 @@
+[ {
+  "name" : "org.swdc.dependency.EnvironmentFactory",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.AnnotationEnvironment",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.AnnotationLoader",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.DependencyContext",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.DependencyEnvironment",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.DependencyFactory",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.DependencyScope",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.EnvironmentLoader",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.Listenable",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.AliasFor",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Aspect",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Aware",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Dependency",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Factory",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.ImplementBy",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Interceptor",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.MultipleImplement",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Order",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.Prototype",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.ScopeImplement",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.annotations.With",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.interceptor.AspectAt",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.interceptor.AspectHandler",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.interceptor.InvocationPoint",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.interceptor.ProcessPoint",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.interceptor.RuntimeAspectInfo",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.layer.DependencyLayer",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.layer.Layer",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.layer.LayerDependencyContext",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.layer.Layerable",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.listeners.AfterCreationListener",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.listeners.AfterRegisterListener",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.listeners.DependencyListener",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.parser.AnnotationDependencyParser",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.parser.DependencyParser",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.ComponentInfo",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.ConstructorInfo",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.DefaultDependencyRegister",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.DefaultDependencyRegistryContext",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.DependencyInfo",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.DependencyRegister",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.DependencyRegisterContext",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.FactoryDependencyInfo",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.registry.InterceptorInfo",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.scopes.CacheDependencyHolder",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.scopes.PrototypeDependencyScope",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.scopes.SingletonDependencyScope",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.utils.AnnotationDescription",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.utils.AnnotationUtil",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.utils.ReflectionUtil",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.utils.TypedKey",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+} ]
