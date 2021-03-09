@@ -1,3 +1,5 @@
+import org.swdc.dependency.layer.LayerLoader;
+
 module swdc.application.dependency {
 
     requires jakarta.inject;
@@ -10,5 +12,7 @@ module swdc.application.dependency {
     exports org.swdc.dependency.annotations;
     exports org.swdc.dependency.listeners;
     exports org.swdc.dependency.interceptor;
+
+    uses LayerLoader;
 
 }
