@@ -14,17 +14,17 @@ public class LayerDependencyContext implements DependencyContext {
 
     @Override
     public <T> T getByClass(Class<T> clazz) {
-        return layer.findParentByClass(clazz);
+        return layer.findLayersByClass(clazz,null);
     }
 
     @Override
     public <T> T getByName(String name) {
-        return layer.findParentByName(name);
+        return layer.findLayersByName(name,null);
     }
 
     @Override
     public <T> List<T> getByAbstract(Class<T> parent) {
-        return layer.findParentByAbstract(parent);
+        return layer.findLayersByAbstract(parent,null);
     }
 
     @Override

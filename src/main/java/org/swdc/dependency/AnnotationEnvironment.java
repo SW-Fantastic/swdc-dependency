@@ -45,7 +45,9 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         afterCreationListeners = new ArrayList<>();
         factoryMap = new HashMap<>();
 
-        scopes.put(Singleton.class,new SingletonDependencyScope());
+        DependencyScope scope = new SingletonDependencyScope();
+        scope.setContext(this);
+        scopes.put(Singleton.class,scope);
     }
 
     @Override
@@ -105,7 +107,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         checkStatus();
 
         if (layers != null) {
-            Object target = layers.findParentByClass(clazz);
+            Object target = layers.findLayersByClass(clazz,this);
             if (target != null) {
                 return (T)target;
             }
@@ -159,7 +161,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         checkStatus();
 
         if (layers != null) {
-            Object target = layers.findParentInterceptor(clazz);
+            Object target = layers.findLayersInterceptor(clazz,this);
             if (target != null) {
                 return (T)target;
             }
@@ -202,7 +204,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
     public <T> T getFactory(Class clazz) {
 
         if (layers != null) {
-            Object target = layers.findParentFactory(clazz);
+            Object target = layers.findLayersFactory(clazz,this);
             if (target != null) {
                 return (T)target;
             }
@@ -299,7 +301,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         checkStatus();
 
         if (layers != null) {
-            T result = layers.findParentByName(name);
+            T result = layers.findLayersByName(name,this);
             if (result != null) {
                 return result;
             }
@@ -346,7 +348,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         checkStatus();
 
         if (layers != null) {
-            List<T> result = layers.findParentByAbstract(parent);
+            List<T> result = layers.findLayersByAbstract(parent,this);
             if (result != null && result.size() > 0) {
                 return result;
             }
@@ -412,6 +414,7 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         }
         try {
             DependencyScope scope = (DependencyScope) implInfo.value().getConstructor().newInstance();
+            scope.setContext(this);
             scopes.put(scopeType,scope);
             return scope;
         } catch (Exception e) {

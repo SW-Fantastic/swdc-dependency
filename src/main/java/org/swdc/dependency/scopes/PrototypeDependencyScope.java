@@ -1,5 +1,6 @@
 package org.swdc.dependency.scopes;
 
+import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.DependencyScope;
 import org.swdc.dependency.annotations.Prototype;
 
@@ -8,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class PrototypeDependencyScope implements DependencyScope {
+
+    private DependencyContext context;
 
     @Override
     public <T> T getByClass(Class<T> clazz) {
@@ -42,5 +45,10 @@ public class PrototypeDependencyScope implements DependencyScope {
     @Override
     public <T> T put(String name, Class clazz, T component) {
         return component;
+    }
+
+    @Override
+    public void setContext(DependencyContext context) {
+        this.context = context;
     }
 }

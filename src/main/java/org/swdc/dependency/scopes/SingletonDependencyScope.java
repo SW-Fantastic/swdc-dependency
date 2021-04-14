@@ -1,6 +1,7 @@
 package org.swdc.dependency.scopes;
 
 import jakarta.inject.Singleton;
+import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.DependencyScope;
 
 import java.util.ArrayList;
@@ -10,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class SingletonDependencyScope implements DependencyScope {
+
+    private DependencyContext context;
 
     private Map<String,Object> namedComponents = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Class, List<Object>> typedComponents = new ConcurrentHashMap<>();
@@ -75,5 +78,10 @@ public class SingletonDependencyScope implements DependencyScope {
                 .stream()
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void setContext(DependencyContext context) {
+        this.context = context;
     }
 }

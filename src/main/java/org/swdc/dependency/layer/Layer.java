@@ -7,12 +7,20 @@ import org.swdc.dependency.registry.ComponentInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 默认依赖层的实现。
+ */
 public class Layer implements DependencyLayer {
+
+    /**
+     * root会存储其他的layer
+     */
+    private List<Layer> layers;
 
     /**
      * 父组件
      */
-    private Layer parent;
+    private Layer root;
 
     /**
      * DependencyContext的可分层实现。
@@ -67,7 +75,9 @@ public class Layer implements DependencyLayer {
         if (!Layerable.class.isAssignableFrom(layerable.getClass())) {
             throw new RuntimeException("该DependencyContext不支持分层。");
         }
+        this.layers = new ArrayList<>();
         this.layerable = (Layerable) layerable;
+        this.layerable.setImport(this);
     }
 
     /**
@@ -81,6 +91,7 @@ public class Layer implements DependencyLayer {
         }
         this.layerable = (Layerable) layerable;
         this.closed = closed;
+        this.layers = new ArrayList<>();
         List<ComponentInfo> infoList = this.layerable.getExport();
         for (ComponentInfo info: infoList) {
             typeReference.add(info.getClazz());
@@ -105,59 +116,69 @@ public class Layer implements DependencyLayer {
         if (!Layerable.class.isAssignableFrom(layerable.getClass())) {
             throw new RuntimeException("DependencyContext不支持分层。");
         }
-        Layer layer = this;
-        while (layer.parent != null) {
-            layer = layer.parent;
-        }
+
         Layer newLayer = new Layer(layerable,true);
-        layer.setParent(newLayer);
-        layer.getLayerable().setImport(newLayer);
+        newLayer.setRoot(this);
+        newLayer.getLayerable().setImport(newLayer);
+        this.layers.add(newLayer);
         return this;
     }
 
     @Override
-    public <T> T findParentByClass(Class<T> clazz) {
-        if (this.typeReference.contains(clazz)) {
-            return layerable.getByClass(clazz);
+    public <T> T findLayersByClass(Class<T> clazz,Layerable from) {
+        if (root != null) {
+            return root.findLayersByClass(clazz,from);
         }
         T target = null;
-        if (this.parent != null) {
-            target = this.parent.findParentByClass(clazz);
+        for (Layer layer: layers) {
+            if (layer.getLayerable() == from) {
+                continue;
+            }
+            if (layer.typeReference.contains(clazz)) {
+                return layer.getLayerable().getByClass(clazz);
+            }
         }
-        if (target == null && !closed && this.creatable(clazz)) {
+        if (!closed && this.creatable(clazz) && this.layerable != from) {
             target = layerable.getByClass(clazz);
         }
         return target;
     }
 
     @Override
-    public <T> T findParentByName(String name) {
-        if (namedReference.contains(name)) {
-            return layerable.getByName(name);
+    public <T> T findLayersByName(String name,Layerable layerable) {
+        if (root != null) {
+            return root.findLayersByName(name,layerable);
         }
-        T target = null;
-        if (this.parent != null) {
-            target = this.parent.findParentByName(name);
+        for (Layer layer: layers) {
+            if (layer.getLayerable() == layerable) {
+                continue;
+            }
+            if (layer.namedReference.contains(name)) {
+                return layer.getLayerable().getByName(name);
+            }
         }
-        if (target == null && !closed) {
-            target = layerable.getByName(name);
-        }
-        return target;
+        return null;
     }
 
     @Override
-    public <T> T findParentFactory(Class clazz) {
-        if (factoryReference.contains(clazz)) {
-            if (layerable instanceof DependencyFactory){
-                DependencyFactory factory = (DependencyFactory) layerable;
-                return factory.getFactory(clazz);
-            }
+    public <T> T findLayersFactory(Class clazz,Layerable layerable) {
+        if (root != null) {
+            return root.findLayersFactory(clazz,layerable);
         }
         T target = null;
-        if (this.parent != null) {
-            target = this.parent.findParentFactory(clazz);
+        for (Layer layer: layers) {
+            if (layer.factoryReference.contains(clazz)) {
+                Layerable layerableItem = layer.getLayerable();
+                if (layerableItem == layerable) {
+                    continue;
+                }
+                if (layerableItem instanceof DependencyFactory){
+                    DependencyFactory factory = (DependencyFactory) layerableItem;
+                    return factory.getFactory(clazz);
+                }
+            }
         }
-        if (target == null && !closed && this.creatable(clazz)) {
+        if (!closed && this.creatable(clazz) && layerable != this.layerable) {
             if (layerable instanceof DependencyFactory) {
                 DependencyFactory factory = (DependencyFactory) layerable;
                 target = factory.getFactory(clazz);
@@ -167,18 +188,22 @@ public class Layer implements DependencyLayer {
     }
 
     @Override
-    public <T> T findParentInterceptor(Class clazz) {
-        if (interceptorReference.contains(clazz)) {
-            if (layerable instanceof DependencyFactory) {
+    public <T> T findLayersInterceptor(Class clazz,Layerable from) {
+        if (root != null) {
+            return root.findLayersInterceptor(clazz,from);
+        }
+        for (Layer layer: layers) {
+            Layerable layerable = layer.getLayerable();
+            if (layerable == from) {
+                continue;
+            }
+            if (layer.interceptorReference.contains(clazz) && (layerable instanceof DependencyFactory)) {
                 DependencyFactory factory = (DependencyFactory) layerable;
                 return (T)factory.getInterceptor(clazz);
             }
         }
         T target = null;
-        if (this.parent != null) {
-            target = this.parent.findParentInterceptor(clazz);
-        }
-        if (target == null && !closed && this.creatable(clazz)) {
+        if (!closed && this.creatable(clazz) && this.layerable != from) {
             if (layerable instanceof DependencyFactory) {
                 DependencyFactory factory = (DependencyFactory) layerable;
                 target = (T) factory.getInterceptor(clazz);
@@ -188,27 +213,28 @@ public class Layer implements DependencyLayer {
     }
 
     @Override
-    public <T> List<T> findParentByAbstract(Class<T> clazz) {
-        if (abstractReference.contains(clazz)) {
-            return layerable.getByAbstract(clazz);
+    public <T> List<T> findLayersByAbstract(Class<T> clazz,Layerable from) {
+        if (root !=  null) {
+            return  root.findLayersByAbstract(clazz,from);
+        }
+        for (Layer layer: layers) {
+            if (layer.getLayerable() == from) {
+                continue;
+            }
+            if (layer.abstractReference.contains(clazz)) {
+                return layer.getLayerable().getByAbstract(clazz);
+            }
         }
         List<T> target = null;
-        if (this.parent != null) {
-            target = this.parent.findParentByAbstract(clazz);
-        }
-        if (target == null && !closed) {
+        if (!closed && this.layerable != from) {
             target = layerable.getByAbstract(clazz);
         }
         return target;
     }
 
-    @Override
-    public Layer getParent() {
-        return this.parent;
-    }
 
-    private void setParent(Layer layer) {
-        this.parent = layer;
+    private void setRoot(Layer layer) {
+        this.root = layer;
     }
 
     Layerable getLayerable() {
@@ -225,10 +251,13 @@ public class Layer implements DependencyLayer {
      * @return 是否允许组件的创建。
      */
     private boolean creatable(Class clazz) {
-        if (parent != null && parent.contains(clazz)){
-            return false;
-        } else if (parent != null) {
-            return parent.creatable(clazz);
+        if (root != null) {
+            return root.creatable(clazz);
+        }
+        for (Layer layer: layers) {
+            if(layer.contains(clazz)) {
+                return false;
+            }
         }
         return true;
     }

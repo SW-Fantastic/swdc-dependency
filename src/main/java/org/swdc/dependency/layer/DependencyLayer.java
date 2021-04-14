@@ -26,7 +26,7 @@ public interface DependencyLayer  {
      * @param <T>
      * @return
      */
-    <T> T findParentByClass(Class<T> clazz);
+    <T> T findLayersByClass(Class<T> clazz, Layerable from);
 
     /**
      *
@@ -41,7 +41,7 @@ public interface DependencyLayer  {
      * @param <T>
      * @return
      */
-    <T> T findParentByName(String name);
+    <T> T findLayersByName(String name,Layerable from);
 
     /**
      *
@@ -59,7 +59,7 @@ public interface DependencyLayer  {
      * @param <T>
      * @return
      */
-    <T> T findParentFactory(Class clazz);
+    <T> T findLayersFactory(Class clazz,Layerable from);
 
     /**
      *
@@ -77,7 +77,7 @@ public interface DependencyLayer  {
      * @param <T>
      * @return
      */
-    <T> T findParentInterceptor(Class clazz);
+    <T> T findLayersInterceptor(Class clazz,Layerable from);
 
     /**
      *
@@ -92,12 +92,7 @@ public interface DependencyLayer  {
      * @param <T>
      * @return
      */
-    <T> List<T> findParentByAbstract(Class<T> clazz);
+    <T> List<T> findLayersByAbstract(Class<T> clazz,Layerable from);
 
-    /**
-     * 获取上层
-     * @return
-     */
-    Layer getParent();
 
 }

@@ -41,4 +41,10 @@ public interface DependencyScope extends DependencyContext {
      */
     <T> T put(String name, Class clazz, T component);
 
+    /**
+     * 设置上下文
+     * @param context
+     */
+    void setContext(DependencyContext context);
+
 }
