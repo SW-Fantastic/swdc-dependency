@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class AnnotationEnvironment extends EnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener>, Layerable {
+public class AnnotationEnvironment extends BaseEnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener>, Layerable {
 
     private Map<Class, DependencyScope> scopes;
 
@@ -80,12 +80,10 @@ public class AnnotationEnvironment extends EnvironmentFactory implements Depende
         }
         if (info != null) {
             DependencyScope scope = this.getScope(info.getScope());
-            if (!info.getName().equals(component.getName())) {
-                if (info.isMultiple()) {
-                    scope.put(info.getName(),component,info.getAbstractClazz(),instance);
-                } else {
-                    scope.put(info.getName(),component,instance);
-                }
+            if (info.isMultiple()) {
+                scope.put(info.getName(),component,info.getAbstractClazz(),instance);
+            } else {
+                scope.put(info.getName(),component,instance);
             }
         }
     }

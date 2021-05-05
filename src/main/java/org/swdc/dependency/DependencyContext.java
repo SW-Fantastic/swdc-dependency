@@ -41,6 +41,10 @@ public interface DependencyContext {
      */
     <T>  List<T> getByAbstract(Class<T> parent);
 
+    /**
+     * 返回所有组件
+     * @return 所有这里面的组件实例
+     */
     List<Object> getAllComponent();
 
 }

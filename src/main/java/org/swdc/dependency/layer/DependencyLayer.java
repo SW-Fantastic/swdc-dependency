@@ -23,7 +23,8 @@ public interface DependencyLayer  {
      * 就会由第一层（开放层）解析和创建。
      *
      * @param clazz 组件类
-     * @param <T>
+     * @param from 此请求的来源
+     * @param <T> 组件类型
      * @return
      */
     <T> T findLayersByClass(Class<T> clazz, Layerable from);
@@ -38,6 +39,7 @@ public interface DependencyLayer  {
      * 就会由第一层（开放层）解析和创建。
      *
      * @param name 组件名
+     * @param from 此组件请求的来源
      * @param <T>
      * @return
      */
@@ -56,6 +58,7 @@ public interface DependencyLayer  {
      * 就会由第一层（开放层）解析和创建。
      *
      * @param clazz 组件类
+     * @param from 此组件请求的来源
      * @param <T>
      * @return
      */
@@ -74,7 +77,8 @@ public interface DependencyLayer  {
      * 获取到。
      *
      * @param clazz 组件类
-     * @param <T>
+     * @param <T> 组件类型
+     * @param from 此组件请求的来源
      * @return
      */
     <T> T findLayersInterceptor(Class clazz,Layerable from);
@@ -90,6 +94,7 @@ public interface DependencyLayer  {
      *
      * @param clazz 组件抽象类
      * @param <T>
+     * @param from 此组件请求的来源
      * @return
      */
     <T> List<T> findLayersByAbstract(Class<T> clazz,Layerable from);

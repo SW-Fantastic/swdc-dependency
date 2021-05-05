@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  *
  * 这个类专注于如何创建一个组件。
  */
-public abstract class EnvironmentFactory implements DependencyFactory {
+public abstract class BaseEnvironmentFactory implements DependencyFactory {
 
 
     /**

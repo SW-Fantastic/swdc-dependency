@@ -9,8 +9,20 @@ import java.util.List;
 
 public interface DependencyParser<S> {
 
+    /**
+     * 解析组件的方法
+     * @param source 组件的描述符
+     * @param context 组件注册空间的上下文
+     * @return
+     */
     List<ComponentInfo> parse(S source, DependencyRegisterContext context);
 
+    /**
+     * 解析后引发相关的listener
+     * @param info
+     * @param listeners
+     * @return
+     */
     default ComponentInfo invokeListeners(ComponentInfo info,Collection<AfterRegisterListener> listeners) {
         for (AfterRegisterListener listener: listeners) {
             info = listener.afterCreated(info);

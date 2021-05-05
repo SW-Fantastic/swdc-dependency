@@ -9,6 +9,11 @@ import org.swdc.dependency.registry.ComponentInfo;
  */
 public interface DependencyRegister {
 
+    /**
+     * 注册一个组件
+     * @param info 组件描述符
+     * @return
+     */
     ComponentInfo register(ComponentInfo info);
 
 }

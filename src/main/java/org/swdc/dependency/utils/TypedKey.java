@@ -2,6 +2,7 @@ package org.swdc.dependency.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TypedKey<T> {
@@ -24,7 +25,24 @@ public class TypedKey<T> {
         return type;
     }
 
-    public static <T> TypedKey<T> getTypedKey(Class<T> type,String name) {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()){
+            return false;
+        }
+        TypedKey<?> typedKey = (TypedKey<?>) o;
+        return Objects.equals(type, typedKey.type) && Objects.equals(name, typedKey.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, name);
+    }
+
+    public static <T> TypedKey<T> getTypedKey(Class<T> type, String name) {
         if (keys.containsKey(type)) {
             Map<String,TypedKey> typedKeyMap = keys.get(type);
             if (!typedKeyMap.containsKey(name)) {

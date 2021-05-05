@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 
-public abstract class ConsoleApplication implements SWApplication {
+public abstract class AbstractApplication implements SWApplication {
 
     private List<String> args;
     private DependencyContext context;

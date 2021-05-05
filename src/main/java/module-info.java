@@ -13,6 +13,7 @@ module swdc.application.dependency {
     exports org.swdc.dependency.listeners;
     exports org.swdc.dependency.interceptor;
     exports org.swdc.dependency.application;
+    exports org.swdc.dependency.layer;
 
     uses LayerLoader;
 

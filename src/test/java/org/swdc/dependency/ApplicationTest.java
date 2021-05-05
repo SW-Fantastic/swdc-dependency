@@ -1,8 +1,8 @@
 package org.swdc.dependency;
 
-import org.swdc.dependency.application.ConsoleApplication;
+import org.swdc.dependency.application.AbstractApplication;
 
-public class ApplicationTest extends ConsoleApplication {
+public class ApplicationTest extends AbstractApplication {
 
     @Override
     public void onStarted(DependencyContext context) {

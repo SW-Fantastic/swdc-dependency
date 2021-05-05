@@ -25,6 +25,8 @@ public interface DependencyFactory extends DependencyContext {
      * 获取组件，包括创建中ed
      * @param info 组件信息
      * @param <T> 组件类
+     * @param other 提供的参数，任意对象，具体是什么
+     *              看使用此factory的类
      * @return 组件
      */
     <T> T getInternal(ComponentInfo info,Object other);
