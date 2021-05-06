@@ -67,13 +67,52 @@ public class ReflectionUtil {
         return methodList;
     }
 
-    /**
-     * 获取组件的工厂方法
-     * @param clazz 组件类
-     * @return 工厂方法列表
-     */
-    public List<Method> findDefineMethod(Class clazz) {
-        return Collections.emptyList();
+    public static boolean isBasicType(Class type) {
+        if (type == int.class ||
+                type == float.class ||
+                type == double.class ||
+                type == char.class ||
+                type == byte.class ||
+                type == short.class) {
+            return  true;
+        }
+        return  false;
+    }
+
+    public static boolean isBoxedType(Class type) {
+        if (type == Integer.class ||
+                type == Float.class ||
+                type == Double.class ||
+                type == Character.class ||
+                type == Byte.class ||
+                type == Boolean.class||
+                type == Short.class) {
+            return  true;
+        }
+        return  false;
+    }
+
+    public static Class getBasicType(Class type){
+        if (isBoxedType(type)) {
+            if (Integer.class.equals(type)) {
+                return int.class;
+            } else if (Double.class.equals(type)) {
+                return double.class;
+            } else if (Float.class.equals(type)) {
+                return float.class;
+            } else if (Character.class.equals(type)) {
+                return char.class;
+            } else if (Byte.class.equals(type)) {
+                return byte.class;
+            } else if (Boolean.class.equals(type)){
+                return boolean.class;
+            } else if (Short.class.equals(type)) {
+                return short.class;
+            }
+        } else if (isBasicType(type)) {
+            return type;
+        }
+        throw new RuntimeException(type.getName() + "不是一个包装类型，无法进行转换");
     }
 
 }

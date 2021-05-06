@@ -43,6 +43,9 @@ public class TypedKey<T> {
     }
 
     public static <T> TypedKey<T> getTypedKey(Class<T> type, String name) {
+        if (ReflectionUtil.isBoxedType(type)) {
+            type = ReflectionUtil.getBasicType(type);
+        }
         if (keys.containsKey(type)) {
             Map<String,TypedKey> typedKeyMap = keys.get(type);
             if (!typedKeyMap.containsKey(name)) {
