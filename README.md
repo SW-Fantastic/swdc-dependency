@@ -45,7 +45,7 @@
 ```groovy
     implementation 'jakarta.inject:jakarta.inject-api:2.0.0'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.0.0'
-    implementation "org.swdc:application-component:1.3-SNAPSHOT"
+    implementation "org.swdc:application-component:0.1.3"
 ```
 
 如果你在使用JPMS（即工程包含module-info.java）则需要添加：
