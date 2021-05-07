@@ -1,9 +1,9 @@
 # application - component
 
-[![Release](https://jitpack.io/v/SW-Fantastic/swdc-dependency.svg)](https://jitpack.io/#SW-Fantastic/swdc-dependency)
-
 提供组件的DI功能，这是一个遵守javax.inject的注入实现。
-此组件现在处于开发中，最终将会通过JitPack提供。
+~~此组件现在处于开发中，最终将会通过JitPack提供。~~我改用Gradle了，
+现在里面既有Gradle也有maven，不知道在JitPack会不会有问题，所以
+还请自行安装到本地maven。
 
 ## 概述
 
@@ -28,22 +28,32 @@
 但是AOP暂时还不行，这个还需要等待Plugin的完善。
 
 ## 如何使用
-添加以下仓库：
-```xml
-<repositories>
-	<repository>
-	  <id>jitpack.io</id>
-	  <url>https://jitpack.io</url>
-	</repository>
-</repositories>
-```
-然后使用此Maven：
+请直接clone本项目，然后通过gradle配置他，并且执行build，
+和publishToMavenLocal。
+
+然后使用此Maven以及Jakarta.Inject和Jakarta.Annotation：
 ```xml
 <dependency>
 	 <groupId>com.github.SW-Fantastic</groupId>
 	 <artifactId>swdc-dependency</artifactId>
-	 <version>0.1.2</version>
+	 <version>0.1.3</version>
 </dependency>
+```
+
+或者使用Gradle导入：
+
+```groovy
+    implementation 'jakarta.inject:jakarta.inject-api:2.0.0'
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.0.0'
+    implementation "org.swdc:application-component:1.3-SNAPSHOT"
+```
+
+如果你在使用JPMS（即工程包含module-info.java）则需要添加：
+
+```groovy
+compileJava {
+    options.compilerArgs += ['--module-path', classpath.asPath]
+}
 ```
 
 ## 进展
@@ -57,7 +67,7 @@
  - [x] 自定义Scope（增加了Prototype的Scope）
  - [x] 后处理接口
  - [x] AOP支持（Before，After，Around等）
- - [x] Package扫描功能（基于io.github.classgraph）
+ - [x] Package扫描功能（基于io.github.classgraph,不建议使用）
 
 ## Example
 

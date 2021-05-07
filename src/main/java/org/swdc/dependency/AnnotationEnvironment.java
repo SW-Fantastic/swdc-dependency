@@ -130,6 +130,12 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             return (T)target;
         }
 
+        if(this.getHolder().isCreating(info.getClazz())) {
+            throw new RuntimeException("出现了循环依赖：" + clazz.getName());
+        } else {
+            this.getHolder().begin(info.getClazz());
+        }
+
         target = create(info);
 
         if (info.isMultiple()) {
@@ -137,6 +143,8 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
         } else {
             scope.put(info.getName(),info.getClazz(),target);
         }
+
+        this.getHolder().complete(info);
 
         if (info.getInitMethod() != null) {
             try {
@@ -186,8 +194,17 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             return (T)target;
         }
 
+        if(this.getHolder().isCreating(info.getClazz())) {
+            throw new RuntimeException("出现了循环依赖：" + clazz.getName());
+        } else {
+            this.getHolder().begin(info.getClazz());
+        }
+
         target = create(info);
         scope.put(info.getName(),clazz,target);
+
+        this.getHolder().complete(info);
+
         if (info.getInitMethod() != null) {
             try {
                 info.getInitMethod().invoke(target);
@@ -228,7 +245,16 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
                         throw new RuntimeException("无法创建工厂组件，解析失败：" + clazz.getName());
                     }
                 }
+
+                if(this.getHolder().isCreating(info.getClazz())) {
+                    throw new RuntimeException("出现了循环依赖：" + clazz.getName());
+                } else {
+                    this.getHolder().begin(info.getClazz());
+                }
+
                 factory = create(info);
+
+                this.getHolder().complete(info);
                 if (info.getInitMethod() != null) {
                     try {
                         info.getInitMethod().invoke(factory);
@@ -320,6 +346,12 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
         Object target = scope.getByName(name);
         if (target == null) {
 
+            if(this.getHolder().isCreating(info.getClazz())) {
+                throw new RuntimeException("出现了循环依赖：" + info.getClazz().getName());
+            } else {
+                this.getHolder().begin(info.getClazz());
+            }
+
             target = create(info);
 
             if (info.isMultiple()) {
@@ -327,6 +359,8 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             } else {
                 scope.put(info.getName(),info.getClazz(),target);
             }
+
+            this.getHolder().complete(info);
 
             if (info.getInitMethod() != null) {
                 try {
@@ -370,10 +404,18 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             if (info.isFactoryComponent()) {
                 continue;
             }
+
+            if(this.getHolder().isCreating(info.getClazz())) {
+                throw new RuntimeException("出现了循环依赖：" + info.getClazz().getName());
+            } else {
+                this.getHolder().begin(info.getClazz());
+            }
+
             Object target = create(info);
 
-            // 进行Setter和字段的注入
             scope.put(info.getName(),info.getClazz(),info.getAbstractClazz(),target);
+
+            this.getHolder().complete(info);
 
             result.add(target);
             if (info.getInitMethod() != null) {
