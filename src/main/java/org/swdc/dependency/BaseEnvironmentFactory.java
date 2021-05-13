@@ -46,12 +46,6 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
 
     @Override
     public <T> T create(ComponentInfo info) {
-        Class clazz = info.getClazz();
-       /* if (holder.isCreating(clazz)) {
-            throw new RuntimeException("出现了循环依赖：" + clazz.getName());
-        } else {
-            holder.begin(clazz);
-        }*/
         T target = null;
         if (info.getFactory() != null) {
             target = createByFactory(info);
@@ -64,7 +58,6 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
            target = this.withInterceptor(info, target, info.getAdviceBy());
         }
 
-        //holder.complete(info);
         return target;
     }
 

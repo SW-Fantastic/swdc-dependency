@@ -28,6 +28,9 @@ repositories {
 }
 
 dependencies {
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+    implementation 'ch.qos.logback:logback-core:1.2.3'
+    implementation 'org.slf4j:slf4j-api:1.7.5'
     implementation 'jakarta.inject:jakarta.inject-api:2.0.0'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.0.0'
     implementation 'net.bytebuddy:byte-buddy:1.10.14'
@@ -48,6 +51,14 @@ publishing {
 test {
     useJUnitPlatform()
 }
+
+task copyResources(type: Copy) {
+    from sourceSets.main.resources
+    into sourceSets.main.java.outputDir
+    processResources.exclude("**/*.*")
+}
+
+processResources.dependsOn copyResources
 
 compileJava {
     options.compilerArgs += ['--module-path', classpath.asPath]
