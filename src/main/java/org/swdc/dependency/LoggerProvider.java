@@ -3,6 +3,7 @@ package org.swdc.dependency;
 import jakarta.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -14,6 +15,10 @@ public class LoggerProvider implements Provider<Logger> {
 
     @Override
     public Logger get() {
+
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         InvocationHandler handler = ((proxy, method, args) -> {
             Class targetClazz = method.getDeclaringClass();
             if (loggerOfClasses.contains(targetClazz)) {

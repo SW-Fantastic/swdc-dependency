@@ -7,6 +7,7 @@ module swdc.application.dependency {
     requires net.bytebuddy;
     requires io.github.classgraph;
     requires slf4j.api;
+    requires jul.to.slf4j;
 
     exports org.swdc.dependency;
     exports org.swdc.dependency.utils;

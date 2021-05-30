@@ -1,5 +1,5 @@
 [ {
-  "name" : "org.swdc.dependency.EnvironmentFactory",
+  "name" : "org.swdc.dependency.BaseEnvironmentFactory",
   "allDeclaredConstructors" : true,
   "allPublicConstructors" : true,
   "allDeclaredMethods" : true,
@@ -80,6 +80,16 @@
   "allPublicFields" : true
 }, {
   "name" : "org.swdc.dependency.Listenable",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
+  "name" : "org.swdc.dependency.LoggerProvider",
   "allDeclaredConstructors" : true,
   "allPublicConstructors" : true,
   "allDeclaredMethods" : true,
@@ -209,7 +219,7 @@
   "allDeclaredFields" : true,
   "allPublicFields" : true
 }, {
-  "name" : "org.swdc.dependency.application.ConsoleApplication",
+  "name" : "org.swdc.dependency.application.AbstractApplication",
   "allDeclaredConstructors" : true,
   "allPublicConstructors" : true,
   "allDeclaredMethods" : true,
