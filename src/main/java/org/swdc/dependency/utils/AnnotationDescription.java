@@ -16,11 +16,6 @@ public class AnnotationDescription {
     private Class annotation;
 
     /**
-     * 注解实例对象。
-     */
-    private Annotation instance;
-
-    /**
      * 此注解对象包含的父注解和描述对象
      */
     private Map<Class,AnnotationDescription> annotations;
