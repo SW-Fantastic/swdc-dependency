@@ -41,7 +41,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             for (Method method: methods) {
                 if (method.getAnnotation(Factory.class) != null) {
                     // 解析组件声明
-                    this.parseInternalFactory(method,context,list);
+                    this.parseInternalFactory(source,method,context,list);
                 }
             }
         } else if (AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class) != null){
@@ -65,7 +65,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
      * @param container 记录返回值的列表
      * @return 解析完成的组件信息
      */
-    private ComponentInfo parseInternalFactory(Method method,DependencyRegisterContext context, List<ComponentInfo> container) {
+    private ComponentInfo parseInternalFactory(Class factoryClass,Method method,DependencyRegisterContext context, List<ComponentInfo> container) {
         Class type = method.getReturnType();
         Factory factory = method.getAnnotation(Factory.class);
         ComponentInfo parsed = null;
@@ -135,7 +135,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             // 一般来说是Provider会在这里。
             // 无Factor注解，进行默认解析
 
-            Class source = method.getDeclaringClass();
+            Class source = factoryClass;
             Class provided = method.getReturnType();
 
             // 解析工厂提供的组件
@@ -147,6 +147,19 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             parsed.setFactory(source);
             parsed.setFactoryMethod(method);
             parsed.setFactoryInfo(new FactoryDependencyInfo(new ComponentInfo[0],false));
+
+            Method[] methods = provided.getMethods();
+            for (Method  m : methods) {
+                AnnotationDescription init = AnnotationUtil.findAnnotation(m,PostConstruct.class);
+                if (init != null) {
+                    parsed.setInitMethod(m);
+                }
+                AnnotationDescription destroy = AnnotationUtil.findAnnotation(m,PreDestroy.class);
+                if (destroy != null) {
+                    parsed.setDestroyMethod(m);
+                }
+            }
+
             // 注册组件信息
             context.register(parsed);
             container.add(parsed);
@@ -278,7 +291,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             try {
                 Method getMethod = source.getMethod("get");
                 // 解析Provider组件提供的组件
-                parseInternalFactory(getMethod,context,container);
+                parseInternalFactory(source,getMethod,context,container);
             } catch (Exception e) {
                 throw new RuntimeException("can not find factor method.");
             }

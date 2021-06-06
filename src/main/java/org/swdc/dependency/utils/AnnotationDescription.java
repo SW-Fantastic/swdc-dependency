@@ -1,5 +1,6 @@
 package org.swdc.dependency.utils;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,11 @@ public class AnnotationDescription {
      * 此对象描述的注解的类型
      */
     private Class annotation;
+
+    /**
+     * 注解实例对象。
+     */
+    private Annotation instance;
 
     /**
      * 此注解对象包含的父注解和描述对象
