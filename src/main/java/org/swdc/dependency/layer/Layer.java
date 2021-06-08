@@ -4,6 +4,8 @@ import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.DependencyFactory;
 import org.swdc.dependency.registry.ComponentInfo;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -273,6 +275,19 @@ public class Layer implements DependencyLayer {
 
     public DependencyContext asContext() {
         return new LayerDependencyContext(this);
+    }
+
+    public void close() throws Exception {
+        for (Layer layer : this.layers) {
+            layer.close();
+        }
+        if (this.layerable instanceof Closeable) {
+            Closeable cls = (Closeable) this.layerable;
+            cls.close();
+        } else if (this.layerable instanceof AutoCloseable) {
+            AutoCloseable cls = (AutoCloseable) this.layerable;
+            cls.close();
+        }
     }
 
 }

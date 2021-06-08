@@ -485,13 +485,13 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
        List<Object> components = this.getAllComponent();
        for (Object object: components) {
            ComponentInfo info = registryContext.findByClass(object.getClass());
-           if (info.getDestroyMethod() != null) {
+           if (info != null && info.getDestroyMethod() != null) {
                info.getDestroyMethod().invoke(object);
            }
        }
        for (Object factory:factoryMap.values()) {
            ComponentInfo info = registryContext.findByClass(factory.getClass());
-           if (info.getDestroyMethod() != null) {
+           if (info != null && info.getDestroyMethod() != null) {
                info.getDestroyMethod().invoke(factory);
            }
        }

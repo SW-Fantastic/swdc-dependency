@@ -2,9 +2,11 @@ package org.swdc.dependency.layer;
 
 import org.swdc.dependency.DependencyContext;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 
-public class LayerDependencyContext implements DependencyContext {
+public class LayerDependencyContext implements DependencyContext, Closeable {
 
     private Layer layer;
 
@@ -30,5 +32,14 @@ public class LayerDependencyContext implements DependencyContext {
     @Override
     public List<Object> getAllComponent() {
         return layer.getLayerable().getAllComponent();
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            this.layer.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
