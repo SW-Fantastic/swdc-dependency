@@ -104,24 +104,21 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 // 可以通过插件进行这种代理的静态编译，得到静态的代理类。
                 Class staticProxy = Class.forName(target.getClass().getName() + "$Proxied");
                 Object proxied = staticProxy.getConstructor().newInstance();
-                target = AccessController.doPrivileged((PrivilegedAction<Object>) ()-> {
-                    Field[] fields = staticProxy.getDeclaredFields();
-                    for (Field field: fields) {
-                        if (InvocationHandler.class.isAssignableFrom(field.getType())) {
-                            try {
-                                field.setAccessible(true);
-                                field.set(proxied,handler);
-                            } catch (IllegalAccessException e){
-                                //never happen
-                                throw new RuntimeException(e);
-                            }
+                Field[] fields = staticProxy.getDeclaredFields();
+                for (Field field: fields) {
+                    if (InvocationHandler.class.isAssignableFrom(field.getType())) {
+                        try {
+                            field.setAccessible(true);
+                            field.set(proxied,handler);
+                        } catch (IllegalAccessException e){
+                            //never happen
+                            throw new RuntimeException(e);
                         }
                     }
-                    return proxied;
-                });
-               return (T)target;
+                }
+               return (T)proxied;
             } catch (ClassNotFoundException e) {
-                target = byteBuddy.subclass(target.getClass())
+                return (T)byteBuddy.subclass(target.getClass())
                         .method(ElementMatchers.any())
                         .intercept(InvocationHandlerAdapter.of(handler))
                         .name(target.getClass().getName() + "$Proxied")
@@ -134,7 +131,6 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
         } catch (Exception e) {
             throw new RuntimeException("无法为组件：" + target.getClass() + "提供增强，代理对象创建失败！",e);
         }
-        return (T)target;
     }
 
     @Override
@@ -150,17 +146,15 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 final Object realParam = getInternal(fieldDepInfo,map);
                 final Object targetObject = target;
 
-                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-                    try {
-                        Field field = depInfo.getField();
-                        field.setAccessible(true);
-                        field.set(targetObject,realParam);
-                        field.setAccessible(false);
-                        return null;
-                    } catch (IllegalAccessException e) {
-                        return null;
-                    }
-                });
+                try {
+                    Field field = depInfo.getField();
+                    field.setAccessible(true);
+                    field.set(targetObject,realParam);
+                    field.setAccessible(false);
+                    continue;
+                } catch (IllegalAccessException e) {
+                    continue;
+                }
 
             } else {
                 ComponentInfo[] dependency = depInfo.getDependency();
