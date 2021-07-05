@@ -1,9 +1,11 @@
 # application - component
 
 提供组件的DI功能，这是一个遵守javax.inject的注入实现。
-~~此组件现在处于开发中，最终将会通过JitPack提供。~~我改用Gradle了，
+~~此组件现在处于开发中，最终将会通过JitPack提供。~~~~我改用Gradle了，
 现在里面既有Gradle也有maven，不知道在JitPack会不会有问题，所以
-还请自行安装到本地maven。
+还请自行安装到本地maven。~~
+
+gradle总是有奇奇怪怪的问题，还是maven好用（真香~！）。
 
 ## 概述
 
@@ -24,36 +26,22 @@
 
 以后我想为了致敬spring，可能会加入xml之类的其他类型的支持。
 
-此依赖注入环境支持Graal，通过GraalNativePlugin可以生成反射元数据，
-但是AOP暂时还不行，这个还需要等待Plugin的完善。
+~~此依赖注入环境支持Graal，通过GraalNativePlugin可以生成反射元数据，
+但是AOP暂时还不行，这个还需要等待Plugin的完善。~~
+
+不知道为什么javafx不理生成的配置，反射全部失效，如果以后有新的发现可能会重新尝试
+graal的native，暂时还是标准的java吧。
 
 ## 如何使用
-请直接clone本项目，然后通过gradle配置他，并且执行build，
-和publishToMavenLocal。
+请直接clone本项目，然后通过maven配置，并且执行install， 安装到本地。
 
-然后使用此Maven以及Jakarta.Inject和Jakarta.Annotation：
+然后使用此Maven：
 ```xml
 <dependency>
 	 <groupId>com.github.SW-Fantastic</groupId>
 	 <artifactId>swdc-dependency</artifactId>
 	 <version>0.1.3</version>
 </dependency>
-```
-
-或者使用Gradle导入：
-
-```groovy
-    implementation 'jakarta.inject:jakarta.inject-api:2.0.0'
-    implementation 'jakarta.annotation:jakarta.annotation-api:2.0.0'
-    implementation "org.swdc:application-component:0.1.3"
-```
-
-如果你在使用JPMS（即工程包含module-info.java）则需要添加：
-
-```groovy
-compileJava {
-    options.compilerArgs += ['--module-path', classpath.asPath]
-}
 ```
 
 ## 进展
