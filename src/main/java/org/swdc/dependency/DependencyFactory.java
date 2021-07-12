@@ -1,5 +1,6 @@
 package org.swdc.dependency;
 
+import org.swdc.dependency.event.Events;
 import org.swdc.dependency.registry.ComponentInfo;
 
 public interface DependencyFactory extends DependencyContext {
@@ -46,5 +47,11 @@ public interface DependencyFactory extends DependencyContext {
      * @return
      */
     <T> T getInterceptor(Class<T> clazz);
+
+    /**
+     * 事件处理器
+     * @return
+     */
+    Events events();
 
 }

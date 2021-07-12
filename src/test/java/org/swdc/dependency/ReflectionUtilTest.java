@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.swdc.dependency.utils.ReflectionUtil;
 
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ReflectionUtilTest {
@@ -70,6 +72,5 @@ public class ReflectionUtilTest {
         Assertions.assertTrue(fields.contains(ClassTestThree.class.getDeclaredField("testTwo")));
 
     }
-
 
 }

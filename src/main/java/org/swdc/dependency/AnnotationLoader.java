@@ -79,23 +79,6 @@ public class AnnotationLoader implements EnvironmentLoader<AnnotationEnvironment
         return this;
     }
 
-    @Override
-    public AnnotationLoader layerExport(Class clazz) {
-        annotationEnvironment.exportByClass(clazz);
-        return this;
-    }
-
-    @Override
-    public AnnotationLoader layerExport(String name) {
-        annotationEnvironment.exportByName(name);
-        return this;
-    }
-
-    @Override
-    public AnnotationLoader layerExportAbstract(Class clazz) {
-        annotationEnvironment.exportByAbstract(clazz);
-        return this;
-    }
 
     @Override
     public AnnotationLoader afterRegister(AfterRegisterListener listener) {

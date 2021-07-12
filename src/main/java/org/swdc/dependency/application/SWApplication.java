@@ -2,7 +2,6 @@ package org.swdc.dependency.application;
 
 import org.swdc.dependency.DependencyContext;
 import org.swdc.dependency.EnvironmentLoader;
-import org.swdc.dependency.layer.Layer;
 
 public interface SWApplication {
 
@@ -13,12 +12,6 @@ public interface SWApplication {
      */
     void onConfig(EnvironmentLoader loader);
 
-    /**
-     * 启动阶段，启动加载后允许用户手动加载
-     * 自己的layer
-     * @param layer
-     */
-    void onLaunch(Layer layer);
 
     /**
      * 依赖环境处理完毕，可以开始应用的具体内容了

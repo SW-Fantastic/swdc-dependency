@@ -3,6 +3,7 @@ package org.swdc.dependency;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.swdc.dependency.event.Events;
 import org.swdc.dependency.interceptor.AspectHandler;
 import org.swdc.dependency.interceptor.RuntimeAspectInfo;
 import org.swdc.dependency.listeners.AfterCreationListener;
@@ -52,6 +53,10 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
         } else {
             target = createByConstructor(info);
         }
+
+        Events events = this.events();
+        events.registerInstance(target);
+
         this.initialize(info,target);
 
         if (info.getAdviceBy() != null && !info.getAdviceBy().isEmpty()) {

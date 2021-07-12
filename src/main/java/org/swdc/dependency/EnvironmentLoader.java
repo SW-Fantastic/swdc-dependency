@@ -48,28 +48,7 @@ public interface EnvironmentLoader<T extends DependencyContext> {
      */
     EnvironmentLoader<T> withPackage(String packageName);
 
-    /**
-     * 层导出
-     * 用于封装依赖环境，此环境将会具有export的组件
-     *
-     * @param clazz
-     * @return
-     */
-    EnvironmentLoader<T> layerExport(Class clazz);
 
-    /**
-     * 基于name的层导出
-     * @param name
-     * @return
-     */
-    EnvironmentLoader<T> layerExport(String name);
-
-    /**
-     * 抽象组件的所有实现的层导出
-     * @param clazz
-     * @return
-     */
-    EnvironmentLoader<T> layerExportAbstract(Class clazz);
 
     /**
      * 监听器注册

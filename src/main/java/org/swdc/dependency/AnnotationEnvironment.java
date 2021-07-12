@@ -5,8 +5,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.swdc.dependency.annotations.Dependency;
 import org.swdc.dependency.annotations.ScopeImplement;
-import org.swdc.dependency.layer.Layer;
-import org.swdc.dependency.layer.Layerable;
+import org.swdc.dependency.event.Events;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.parser.AnnotationDependencyParser;
@@ -21,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class AnnotationEnvironment extends BaseEnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener>, Layerable {
+public class AnnotationEnvironment extends BaseEnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener> {
 
     private Map<Class, DependencyScope> scopes;
 
@@ -35,8 +34,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     private List<AfterCreationListener> afterCreationListeners;
 
     private AtomicBoolean closed = new AtomicBoolean(false);
-
-    private Layer layers;
 
     public AnnotationEnvironment() {
         registryContext = new DefaultDependencyRegistryContext();
@@ -104,13 +101,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     public <T> T getByClass(Class<T> clazz) {
         checkStatus();
 
-        if (layers != null) {
-            Object target = layers.findLayersByClass(clazz,this);
-            if (target != null) {
-                return (T)target;
-            }
-        }
-
         ComponentInfo info = registryContext.findByClass(clazz);
         if (info == null) {
             parser.parse(clazz,registryContext);
@@ -166,13 +156,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     public <T> T getInterceptor(Class<T> clazz) {
         checkStatus();
 
-        if (layers != null) {
-            Object target = layers.findLayersInterceptor(clazz,this);
-            if (target != null) {
-                return (T)target;
-            }
-        }
-
         ComponentInfo info = registryContext.findByClass(clazz);
         if (info == null) {
             parser.parse(clazz,registryContext);
@@ -216,14 +199,15 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     }
 
     @Override
-    public <T> T getFactory(Class clazz) {
-
-        if (layers != null) {
-            Object target = layers.findLayersFactory(clazz,this);
-            if (target != null) {
-                return (T)target;
-            }
+    public Events events() {
+        if (this.registryContext.findByClass(Events.class) == null) {
+            this.registerInstance(Events.class, new Events());
         }
+        return this.getByClass(Events.class);
+    }
+
+    @Override
+    public <T> T getFactory(Class clazz) {
 
         Object factory = factoryMap.get(clazz);
         if (factory == null) {
@@ -324,13 +308,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     public <T> T getByName(String name) {
         checkStatus();
 
-        if (layers != null) {
-            T result = layers.findLayersByName(name,this);
-            if (result != null) {
-                return result;
-            }
-        }
-
         ComponentInfo info = registryContext.findByNamed(name);
         if (info == null) {
             return null;
@@ -378,13 +355,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     @Override
     public <T> List<T> getByAbstract(Class<T> parent) {
         checkStatus();
-
-        if (layers != null) {
-            List<T> result = layers.findLayersByAbstract(parent,this);
-            if (result != null && result.size() > 0) {
-                return result;
-            }
-        }
 
         List<ComponentInfo> infoList = registryContext.findByAbstract(parent);
         if (infoList == null || infoList.size() == 0) {
@@ -504,50 +474,4 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
         }
     }
 
-    @Override
-    public List<ComponentInfo> getExport() {
-        return exports.stream().collect(Collectors.toUnmodifiableList());
-    }
-
-    @Override
-    public void setImport(Layer layer) {
-        this.layers = layer;
-    }
-
-    @Override
-    public boolean contains(Class clazz) {
-        return registryContext.findByClass(clazz) != null;
-    }
-
-    @Override
-    public void exportByName(String name) {
-        ComponentInfo info = registryContext.findByNamed(name);
-        if (info != null) {
-            this.exports.add(info);
-        }
-    }
-
-    @Override
-    public void exportByClass(Class clazz) {
-        ComponentInfo info = registryContext.findByClass(clazz);
-        if (info == null) {
-            this.registerComponent(clazz);
-            info = registryContext.findByClass(clazz);
-        }
-        if (info != null) {
-            exports.add(info);
-        }
-    }
-
-    @Override
-    public void exportByAbstract(Class clazz) {
-        List<ComponentInfo> infoList = registryContext.findByAbstract(clazz);
-        if (infoList == null || infoList.size() == 0) {
-            this.registerComponent(clazz);
-            infoList = registryContext.findByAbstract(clazz);
-        }
-        if (infoList != null){
-            this.exports.addAll(infoList);
-        }
-    }
 }
