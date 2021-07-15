@@ -146,9 +146,7 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 // 字段注入的类型
                 ComponentInfo fieldDepInfo = depInfo.getDependency()[0];
 
-                Map<Class, AnnotationDescription> map = AnnotationUtil.getAnnotations(depInfo.getField());
-
-                final Object realParam = getInternal(fieldDepInfo,map);
+                final Object realParam = getInternal(fieldDepInfo);
                 final Object targetObject = target;
 
                 try {
@@ -167,9 +165,8 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 Method method = depInfo.getSetter();
                 Parameter[] parameters = method.getParameters();
                 for (int idx = 0; idx < parameters.length; idx ++) {
-                    Map<Class,AnnotationDescription> map = AnnotationUtil.getAnnotations(depInfo.getSetter());
                     ComponentInfo methodParam = dependency[idx];
-                    Object realParam = getInternal(methodParam,map);
+                    Object realParam = getInternal(methodParam);
                     if (realParam == null) {
                         throw new RuntimeException("无法初始化实例，因为缺少组件:" + methodParam.getClazz().getName());
                     }
@@ -212,8 +209,7 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
 
             for (int idx = 0; idx < params.length; idx ++) {
                 ComponentInfo param = dependencies[idx];
-                Map<Class,AnnotationDescription> description = AnnotationUtil.getAnnotations(parameters[idx]);
-                Object realComp = getInternal(param,description);
+                Object realComp = getInternal(param);
                 if (realComp == null) {
                     // cache和scopes里面都没有
                     throw new RuntimeException("无法创建实例，因为缺少组件:" + param.getClazz().getName());
@@ -259,11 +255,9 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
 
         ComponentInfo[] dependencies = dep.getDependencies();
         Object[] params = new Object[dependencies.length];
-        Parameter[] parameters = method.getParameters();
         for (int idx = 0; idx < params.length; idx ++) {
             ComponentInfo param = dependencies[idx];
-            Map<Class,AnnotationDescription> description = AnnotationUtil.getAnnotations(parameters[idx]);
-            Object realComp = getInternal(param,description);
+            Object realComp = getInternal(param);
             if (param.isFactoryComponent()) {
                 realComp = getFactory(param.getClazz());
             }

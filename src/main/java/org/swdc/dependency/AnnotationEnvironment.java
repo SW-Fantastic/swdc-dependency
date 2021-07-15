@@ -14,6 +14,7 @@ import org.swdc.dependency.registry.*;
 import org.swdc.dependency.scopes.SingletonDependencyScope;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -252,10 +253,10 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     }
 
     @Override
-    public  <T> T getInternal(ComponentInfo info, Object object) {
+    public  <T> T getInternal(ComponentInfo info) {
 
         Object realComp = null;
-        Map<Class, AnnotationDescription> objects = (Map<Class, AnnotationDescription>)object;
+        Map<Class, AnnotationDescription> objects = AnnotationUtil.getAnnotations(info.getClazz());
         if (!info.getName().equals(info.getClazz().getName())) {
             // 具名组件，名称和class的全限定名不一致。
             realComp = getHolder().getByName(info.getName());
