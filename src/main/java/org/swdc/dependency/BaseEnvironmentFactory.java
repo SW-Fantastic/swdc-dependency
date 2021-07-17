@@ -37,6 +37,8 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
      */
     private CacheDependencyHolder holder = new CacheDependencyHolder();
 
+    private Events events = new Events();
+
     /**
      * 获取未创建完毕的组件缓存
      * @return 组件缓存
@@ -54,8 +56,11 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
             target = createByConstructor(info);
         }
 
-        Events events = this.events();
         events.registerInstance(target);
+        if (EventAcceptable.class.isAssignableFrom(target.getClass())) {
+            EventAcceptable accept = (EventAcceptable) target;
+            accept.setEvents(events);
+        }
 
         this.initialize(info,target);
 

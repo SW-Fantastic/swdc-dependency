@@ -45,11 +45,4 @@ public interface DependencyFactory extends DependencyContext {
      * @return
      */
     <T> T getInterceptor(Class<T> clazz);
-
-    /**
-     * 事件处理器
-     * @return
-     */
-    Events events();
-
 }

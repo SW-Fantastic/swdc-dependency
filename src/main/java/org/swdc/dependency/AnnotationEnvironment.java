@@ -200,14 +200,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     }
 
     @Override
-    public Events events() {
-        if (this.registryContext.findByClass(Events.class) == null) {
-            this.registerInstance(Events.class, new Events());
-        }
-        return this.getByClass(Events.class);
-    }
-
-    @Override
     public <T> T getFactory(Class clazz) {
 
         Object factory = factoryMap.get(clazz);
