@@ -19,13 +19,6 @@ public class DefaultDependencyRegistryContext extends DefaultDependencyRegister 
         if (clazz.isPrimitive()){
             return null;
         }
-        if (Modifier.isAbstract(clazz.getModifiers()) ||
-                Modifier.isInterface(clazz.getModifiers())) {
-            if (!this.abstractInfo.containsKey(clazz)){
-                return defaultInfo.get(clazz);
-            }
-            return null;
-        }
         return defaultInfo.get(clazz);
     }
 

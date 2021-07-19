@@ -151,12 +151,50 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 // 字段注入的类型
                 ComponentInfo fieldDepInfo = depInfo.getDependency()[0];
 
-                final Object realParam = getInternal(fieldDepInfo);
+                Field field = depInfo.getField();
+                field.setAccessible(true);
+
+                Object realParam = null;
+
+                // 泛型，如果field为List或者map，
+                // 这里记录List或者Map的泛型的真实类型
+                if (field.getGenericType() instanceof ParameterizedType) {
+
+                    Class paramClassType = null;
+                    ParameterizedType paramType = (ParameterizedType) field.getGenericType();
+
+                    if (List.class.isAssignableFrom(field.getType())) {
+                        paramClassType = (Class) paramType.getActualTypeArguments()[0];
+                    } else if (Map.class.isAssignableFrom(field.getType())) {
+                        paramClassType = (Class) paramType.getActualTypeArguments()[1];
+                    }
+
+                    List<Object> params = new ArrayList<>();
+                    List<ComponentInfo> infoList = findAbstractInfo(paramClassType);
+                    for (ComponentInfo item : infoList) {
+                        params.add(this.getInternal(item));
+                    }
+
+                    if (Map.class.isAssignableFrom(field.getType())) {
+                        Class keyType = (Class) paramType.getActualTypeArguments()[0];
+                        if (keyType == String.class) {
+                            realParam = params.stream().collect(Collectors.toMap(c -> c.getClass().getSimpleName(), c -> c));
+                        } else if (keyType == Class.class){
+                            realParam = params.stream().collect(Collectors.toMap(c -> c.getClass(), c -> c));
+                        } else {
+                            throw new RuntimeException("map的批量注入的Key的类型只支持String和Class");
+                        }
+                    } else {
+                        realParam = params;
+                    }
+
+                } else {
+                    realParam = getInternal(fieldDepInfo);
+                }
+
                 final Object targetObject = target;
 
                 try {
-                    Field field = depInfo.getField();
-                    field.setAccessible(true);
                     field.set(targetObject,realParam);
                     field.setAccessible(false);
                     continue;

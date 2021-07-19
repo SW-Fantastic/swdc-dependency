@@ -229,6 +229,16 @@
   "allDeclaredFields" : true,
   "allPublicFields" : true
 }, {
+  "name" : "org.swdc.dependency.annotations.TypeParam",
+  "allDeclaredConstructors" : true,
+  "allPublicConstructors" : true,
+  "allDeclaredMethods" : true,
+  "allPublicMethods" : true,
+  "allDeclaredClasses" : true,
+  "allPublicClasses" : true,
+  "allDeclaredFields" : true,
+  "allPublicFields" : true
+}, {
   "name" : "org.swdc.dependency.annotations.With",
   "allDeclaredConstructors" : true,
   "allPublicConstructors" : true,

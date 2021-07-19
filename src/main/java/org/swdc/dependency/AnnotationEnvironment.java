@@ -255,7 +255,7 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             if (realComp == null) {
                 realComp = getByName(info.getName());
             }
-        } else if (info.isMultiple()) {
+        } /*else if (info.isMultiple()) {
             // 组件是多实例的
             AnnotationDescription named = objects.get(Named.class);
             AnnotationDescription resource = objects.get(Resource.class);
@@ -287,7 +287,7 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
                     }
                 }
             }
-        } else {
+        } */else {
             // 根据类型处理
             realComp = getHolder().getByClass(info.getClazz());
             if (realComp == null) {
@@ -295,6 +295,26 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             }
         }
         return (T)realComp;
+    }
+
+    @Override
+    public ComponentInfo findInfo(Class clazz) {
+        ComponentInfo info =  this.registryContext.findByClass(clazz);
+        if (info == null){
+            this.registerComponent(clazz);
+            info = this.registryContext.findByClass(clazz);
+        }
+        return info;
+    }
+
+    @Override
+    public List<ComponentInfo> findAbstractInfo(Class clazz) {
+        List<ComponentInfo> infoList = this.registryContext.findByAbstract(clazz);
+        if (infoList == null || infoList.size() == 0){
+            this.registerComponent(clazz);
+            infoList = this.registryContext.findByAbstract(clazz);
+        }
+        return infoList;
     }
 
     @Override

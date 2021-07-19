@@ -3,6 +3,8 @@ package org.swdc.dependency;
 import org.swdc.dependency.event.Events;
 import org.swdc.dependency.registry.ComponentInfo;
 
+import java.util.List;
+
 public interface DependencyFactory extends DependencyContext {
 
     /**
@@ -29,6 +31,10 @@ public interface DependencyFactory extends DependencyContext {
      * @return 组件
      */
     <T> T getInternal(ComponentInfo info);
+
+    ComponentInfo findInfo(Class clazz);
+
+    List<ComponentInfo> findAbstractInfo(Class clazz);
 
     /**
      * 获取工厂组件。
