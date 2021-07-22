@@ -57,8 +57,8 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
         }
 
         events.registerInstance(target);
-        if (EventAcceptable.class.isAssignableFrom(target.getClass())) {
-            EventAcceptable accept = (EventAcceptable) target;
+        if (EventEmitter.class.isAssignableFrom(target.getClass())) {
+            EventEmitter accept = (EventEmitter) target;
             accept.setEvents(events);
         }
 
