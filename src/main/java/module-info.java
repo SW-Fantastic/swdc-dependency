@@ -5,7 +5,7 @@ module swdc.application.dependency {
     requires jakarta.annotation;
     requires net.bytebuddy;
     requires io.github.classgraph;
-    requires slf4j.api;
+    requires org.slf4j;
     requires jul.to.slf4j;
 
     exports org.swdc.dependency;
