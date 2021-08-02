@@ -3,6 +3,7 @@ package org.swdc.dependency;
 import jakarta.annotation.Resource;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.swdc.dependency.annotations.Dependency;
 import org.swdc.dependency.annotations.ScopeImplement;
 import org.swdc.dependency.event.Events;
@@ -19,9 +20,16 @@ import org.swdc.dependency.utils.ReflectionUtil;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class AnnotationEnvironment extends BaseEnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener> {
+
+    static {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+        java.util.logging.Logger.getLogger("").setLevel(Level.FINEST); // Root logger, for example.
+    }
 
     private Map<Class, DependencyScope> scopes;
 

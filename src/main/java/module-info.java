@@ -7,6 +7,7 @@ module swdc.application.dependency {
     requires io.github.classgraph;
     requires org.slf4j;
     requires jul.to.slf4j;
+    requires java.logging;
 
     exports org.swdc.dependency;
     exports org.swdc.dependency.utils;

@@ -8,6 +8,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 public class LoggerProvider implements Provider<Logger> {
 
@@ -16,8 +17,6 @@ public class LoggerProvider implements Provider<Logger> {
     @Override
     public Logger get() {
 
-        SLF4JBridgeHandler.removeHandlersForRootLogger();
-        SLF4JBridgeHandler.install();
 
         InvocationHandler handler = ((proxy, method, args) -> {
             Class targetClazz = method.getDeclaringClass();
