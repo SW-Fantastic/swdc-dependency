@@ -65,6 +65,7 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     public void registerScope(DependencyScope scope) {
         checkStatus();
         scopes.put(scope.getScopeType(),scope);
+        scope.setContext(this);
     }
 
     @Override
