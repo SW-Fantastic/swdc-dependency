@@ -46,6 +46,23 @@ public class ReflectionUtil {
         return methodList;
     }
 
+    public static List<Field> findFieldsByAnnotation(Class clazz,Class annotatedWith) {
+        List<Field> fieldList = new ArrayList<>();
+        Class current = clazz;
+
+        while (current != null) {
+            Field[] fields = current.getDeclaredFields();
+            for (Field field: fields) {
+                AnnotationDescription desc = AnnotationUtil.findAnnotation(field,annotatedWith);
+                if (desc != null) {
+                    fieldList.add(field);
+                }
+            }
+            current = current.getSuperclass();
+        }
+        return fieldList;
+    }
+
 
     /**
      * 获取类的可注入字段
