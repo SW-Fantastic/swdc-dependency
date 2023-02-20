@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 标注可被AOP拦截的类
+ * 如果被标记在注解上，则表示此注解为Aspect注解。
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

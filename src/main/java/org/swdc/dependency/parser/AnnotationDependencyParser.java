@@ -264,6 +264,20 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     }
                     parsed.addInterceptorInfo(interceptorInfo);
                 }
+                AnnotationDescription aspectAnno = AnnotationUtil.findAnnotationIn(descriptionMap,With.class);
+                if (aspectAnno != null) {
+                    // 解析AOP的注解 - 特定的注解被标注了With，它们为本方法提供了切面。
+                    Class[] interceptors = aspectAnno.getProperty(Class[].class, "aspectBy");
+                    for (Class clazz : interceptors) {
+                        ComponentInfo aspectInfo = context.findByClass(clazz);
+                        if (aspectInfo == null) {
+                            aspectInfo = this.parseInternal(clazz,context,container);
+                        }
+                        if (aspectInfo != null) {
+                            parsed.addAdviceBy(aspectInfo);
+                        }
+                    }
+                }
                 continue;
             }
             Parameter[] params = method.getParameters();

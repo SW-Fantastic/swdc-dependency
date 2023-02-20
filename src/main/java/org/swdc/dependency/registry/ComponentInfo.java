@@ -120,6 +120,11 @@ public class ComponentInfo {
         if (!info.isInterceptor()) {
             return;
         }
+        for (ComponentInfo adv : adviceBy) {
+            if (adv.clazz == info.clazz) {
+                return;
+            }
+        }
         adviceBy.add(info);
     }
 

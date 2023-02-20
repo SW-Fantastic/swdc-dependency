@@ -76,7 +76,7 @@ public class InterceptorInfo {
             return Arrays.asList(this.returnType).contains(returnType);
         }
         if (this.getAnnotationType() != null) {
-            AnnotationUtil.findAnnotation(method,this.getAnnotationType());
+            return AnnotationUtil.findAnnotation(method,this.getAnnotationType()) != null;
         }
         if (this.getNamePattern() != null) {
             return Pattern.compile(this.namePattern).matcher(method.getName()).find();
