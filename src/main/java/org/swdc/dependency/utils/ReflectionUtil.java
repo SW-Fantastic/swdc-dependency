@@ -8,6 +8,37 @@ import java.util.List;
 
 public class ReflectionUtil {
 
+    public static Method extractGetter(Field field) {
+        Class declareOn = field.getDeclaringClass();
+        Class fieldType = field.getType();
+
+        String name = field.getName();
+        name = name.substring(0,1).toUpperCase() + name.substring(1);
+        if (fieldType == boolean.class) {
+            name = "is" + name;
+        } else {
+            name = "get" + name;
+        }
+        try {
+            return declareOn.getMethod(name);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static Method extractSetter(Field field) {
+        Class declareOn = field.getDeclaringClass();
+        Class fieldType = field.getType();
+
+        String name = field.getName();
+        name = "set" + name.substring(0,1).toUpperCase() + name.substring(1);
+        try {
+            return declareOn.getMethod(name,fieldType);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static List<Method> findAllMethods(Class clazz) {
         List<Method> methodList = new ArrayList<>();
         Class current = clazz;
