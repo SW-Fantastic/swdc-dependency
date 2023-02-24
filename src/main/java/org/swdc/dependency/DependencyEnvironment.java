@@ -5,6 +5,10 @@ import org.swdc.dependency.listeners.AfterRegisterListener;
 
 import java.util.Collection;
 
+/**
+ * 依赖环境的接口类，
+ * 依赖环境在基础的上下文中拓展了Scope和Listener。
+ */
 public interface DependencyEnvironment extends DependencyContext, AutoCloseable {
 
     /**

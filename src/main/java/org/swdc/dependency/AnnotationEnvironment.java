@@ -1,12 +1,9 @@
 package org.swdc.dependency;
 
-import jakarta.annotation.Resource;
-import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.swdc.dependency.annotations.Dependency;
 import org.swdc.dependency.annotations.ScopeImplement;
-import org.swdc.dependency.event.Events;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.parser.AnnotationDependencyParser;
@@ -15,7 +12,6 @@ import org.swdc.dependency.registry.*;
 import org.swdc.dependency.scopes.SingletonDependencyScope;
 import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
-import org.swdc.dependency.utils.ReflectionUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,9 +19,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+/**
+ * 基于注解的依赖环境实现
+ */
 public class AnnotationEnvironment extends BaseEnvironmentFactory implements DependencyEnvironment,Listenable<AfterCreationListener> {
 
     static {
+        // 接管Logger
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
         java.util.logging.Logger.getLogger("").setLevel(Level.FINEST); // Root logger, for example.
@@ -53,6 +53,7 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
 
         DependencyScope scope = new SingletonDependencyScope();
         scope.setContext(this);
+        // 默认提供一个单例的Scope。
         scopes.put(Singleton.class,scope);
     }
 
@@ -264,39 +265,7 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
             if (realComp == null) {
                 realComp = getByName(info.getName());
             }
-        } /*else if (info.isMultiple()) {
-            // 组件是多实例的
-            AnnotationDescription named = objects.get(Named.class);
-            AnnotationDescription resource = objects.get(Resource.class);
-
-            // 多实例判断
-            if (named != null) {
-                String name = named.getProperty(String.class,"value");
-                // named注解，匹配具名组件
-                realComp = getHolder().getByName(name);
-                if (realComp == null) {
-                    realComp = getByName(name);
-                }
-            }
-
-            if (realComp == null && resource != null) {
-                // 有Resources，分别进行具名和类型匹配
-                String name = resource.getProperty(String.class,"name");
-                if (!name.isBlank()) {
-                    realComp = getHolder().getByName(name);
-                    if (realComp == null) {
-                        realComp = getByName(name);
-                    }
-                }
-                Class clazz = resource.getProperty(Class.class,"type");
-                if (info.getAbstractClazz().isAssignableFrom(clazz)) {
-                    realComp = getHolder().getByClass(clazz);
-                    if (realComp == null) {
-                        realComp = this.getByClass(clazz);
-                    }
-                }
-            }
-        } */else {
+        } else {
             // 根据类型处理
             realComp = getHolder().getByClass(info.getClazz());
             if (realComp == null) {

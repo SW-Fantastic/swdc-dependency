@@ -37,6 +37,9 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
      */
     private CacheDependencyHolder holder = new CacheDependencyHolder();
 
+    /**
+     * EventBus，用于传递应用程序的事件。
+     */
     private Events events = new Events();
 
     /**

@@ -2,6 +2,12 @@ package org.swdc.dependency;
 
 import java.util.List;
 
+/**
+ * 针对依赖环境的Listener，将会用于处理和依赖环境有关的
+ * Event。
+ *
+ * @param <T>
+ */
 public interface Listenable<T> {
 
     /**

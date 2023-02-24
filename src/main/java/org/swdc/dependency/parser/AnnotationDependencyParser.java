@@ -1,5 +1,6 @@
 package org.swdc.dependency.parser;
 
+import jakarta.annotation.ManagedBean;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
@@ -27,9 +28,8 @@ import java.util.stream.Stream;
 public class AnnotationDependencyParser implements DependencyParser<Class> {
 
     @Override
-    public List<ComponentInfo> parse(Class source, DependencyRegisterContext context) {
+    public void parse(Class source, DependencyRegisterContext context) {
 
-        List<ComponentInfo> list = new ArrayList<>();
         Map<Class, AnnotationDescription> annotations = AnnotationUtil.getAnnotations(source);
 
         if (AnnotationUtil.findAnnotationIn(annotations,Dependency.class) != null) {
@@ -41,31 +41,29 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             for (Method method: methods) {
                 if (method.getAnnotation(Factory.class) != null) {
                     // 解析组件声明
-                    this.parseInternalFactory(source,method,context,list);
+                    this.parseInternalFactory(source,method,context);
                 }
             }
         } else if (AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class) != null){
             AnnotationDescription impl = AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class);
             Class[] classes = impl.getProperty(Class[].class,"value");
             for (Class clazz: classes) {
-                this.parseInternal(clazz,context,list);
+                this.parseInternal(clazz,context);
             }
         } else {
             // 解析普通的组件信息
-            parseInternal(source,context,list);
+            parseInternal(source,context);
         }
 
-        return list;
     }
 
     /**
      * 解析用来声明组件的方法
      * @param method 方法
      * @param context 注册上下文
-     * @param container 记录返回值的列表
      * @return 解析完成的组件信息
      */
-    private ComponentInfo parseInternalFactory(Class factoryClass,Method method,DependencyRegisterContext context, List<ComponentInfo> container) {
+    private ComponentInfo parseInternalFactory(Class factoryClass,Method method,DependencyRegisterContext context) {
         Class type = method.getReturnType();
         Factory factory = method.getAnnotation(Factory.class);
         ComponentInfo parsed = null;
@@ -86,14 +84,14 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     Class clazz = resource.getProperty(Class.class,"type");
                     info = context.findByClass(clazz);
                     if (info == null) {
-                        info = parseInternal(param.getType(),context,container);
+                        info = parseInternal(param.getType(),context);
                         if (info == null) {
                             throw new RuntimeException("无法解析组件，因为缺少依赖：" + param);
                         }
                     }
                 }
                 if (info == null) {
-                    info = parseInternal(param.getType(),context,container);
+                    info = parseInternal(param.getType(),context);
                     if (info == null) {
                         throw new RuntimeException("无法解析组件，因为缺少依赖：" + param);
                     }
@@ -127,7 +125,6 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             parsed.setFactory(method.getDeclaringClass());
             parsed.setFactoryMethod(method);
             parsed.setFactoryInfo(new FactoryDependencyInfo(dependInfos,Modifier.isStatic(method.getModifiers())));
-            container.add(parsed);
 
             context.register(parsed);
 
@@ -162,7 +159,6 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
             // 注册组件信息
             context.register(parsed);
-            container.add(parsed);
         }
 
         // 调用Listener
@@ -174,7 +170,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         return parsed;
     }
 
-    private ComponentInfo parseInternal(Class source, DependencyRegisterContext context, List<ComponentInfo> container) {
+    private ComponentInfo parseInternal(Class source, DependencyRegisterContext context) {
         Map<Class,AnnotationDescription> annotations = AnnotationUtil.getAnnotations(source);
         // 查找已经存在的组件
         ComponentInfo info = this.getExists(source,annotations,context);
@@ -201,7 +197,6 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
         // 注册组件信息
         context.register(parsed);
-        container.add(parsed);
 
         // 解析构造方法
         Constructor[] constructors = source.getConstructors();
@@ -212,7 +207,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             Parameter[] params = constructor.getParameters();
             ComponentInfo[] infos = new ComponentInfo[params.length];
             for (int idx = 0; idx < params.length; idx ++) {
-                ComponentInfo paramParsed = parseInternal(params[idx].getType(),context,container);
+                ComponentInfo paramParsed = parseInternal(params[idx].getType(),context);
                 infos[idx] = paramParsed;
             }
             ConstructorInfo constructorInfo = new ConstructorInfo(constructor,infos);
@@ -271,7 +266,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     for (Class clazz : interceptors) {
                         ComponentInfo aspectInfo = context.findByClass(clazz);
                         if (aspectInfo == null) {
-                            aspectInfo = this.parseInternal(clazz,context,container);
+                            aspectInfo = this.parseInternal(clazz,context);
                         }
                         if (aspectInfo != null) {
                             parsed.addAdviceBy(aspectInfo);
@@ -283,7 +278,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             Parameter[] params = method.getParameters();
             ComponentInfo[] infos = new ComponentInfo[params.length];
             for (int idx = 0; idx < params.length; idx ++) {
-                ComponentInfo paramParsed = parseInternal(params[idx].getType(),context,container);
+                ComponentInfo paramParsed = parseInternal(params[idx].getType(),context);
                 infos[idx] = paramParsed;
                 DependencyInfo dependencyInfo = new DependencyInfo(method,infos);
                 parsed.getDependencyInfos().add(dependencyInfo);
@@ -296,8 +291,21 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             if(!AnnotationUtil.hasDependency(field)) {
                 continue;
             }
-            ComponentInfo fieldParsed = parseInternal(field.getType(),context,container);
-            DependencyInfo dependencyInfo = new DependencyInfo(field,fieldParsed);
+            parse(field.getType(),context);
+            ComponentInfo parsedInfo = null;
+
+            Map<Class,AnnotationDescription> desc = AnnotationUtil.getAnnotations(field);
+            String depName = parseName(desc);
+            if (depName != null && !depName.isBlank() && !depName.isEmpty()) {
+                parsedInfo = context.findByNamed(depName);
+            } else {
+                parsedInfo = context.findByClass(field.getType());
+            }
+
+            if (parsedInfo == null) {
+                continue;
+            }
+            DependencyInfo dependencyInfo = new DependencyInfo(field,parsedInfo);
             parsed.getDependencyInfos().add(dependencyInfo);
         }
 
@@ -305,7 +313,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             try {
                 Method getMethod = source.getMethod("get");
                 // 解析Provider组件提供的组件
-                parseInternalFactory(source,getMethod,context,container);
+                parseInternalFactory(source,getMethod,context);
             } catch (Exception e) {
                 throw new RuntimeException("can not find factor method.");
             }
@@ -321,7 +329,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             for (Class clazz : interceptors) {
                 ComponentInfo aspectInfo = context.findByClass(clazz);
                 if (aspectInfo == null) {
-                    aspectInfo = this.parseInternal(clazz,context,container);
+                    aspectInfo = this.parseInternal(clazz,context);
                 }
                 if (aspectInfo == null) {
                     continue;
@@ -390,6 +398,10 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         named = AnnotationUtil.findAnnotationIn(descriptionMap,Resource.class);
         if (named != null) {
             return named.getProperty(String.class,"name");
+        }
+        named = AnnotationUtil.findAnnotationIn(descriptionMap, ManagedBean.class);
+        if (named != null) {
+            return named.getProperty(String.class,"value");
         }
         return null;
     }

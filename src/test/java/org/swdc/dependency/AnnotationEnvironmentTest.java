@@ -13,6 +13,7 @@ import org.swdc.dependency.interceptor.AspectAt;
 import org.swdc.dependency.interceptor.InvocationPoint;
 import org.swdc.dependency.interceptor.ProcessPoint;
 import org.swdc.dependency.testpkg.TestAC1;
+import org.swdc.dependency.testpkg.TestACDep;
 
 public class AnnotationEnvironmentTest {
 
@@ -255,6 +256,10 @@ public class AnnotationEnvironmentTest {
     public void testMultiple() {
         AnnotationLoader loader = new AnnotationLoader().withComponent(TestAC1.class);
         DependencyContext context = loader.load();
+
+        TestACDep dep = context.getByClass(TestACDep.class);
+        Assertions.assertNotNull(dep.getAc1());
+        Assertions.assertNotNull(dep.getAc2());
 
         Assertions.assertNotNull(context.getByName("testA"));
         Assertions.assertNotNull(context.getByName("testB"));

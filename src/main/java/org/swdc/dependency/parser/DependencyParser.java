@@ -5,7 +5,6 @@ import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.registry.ComponentInfo;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface DependencyParser<S> {
 
@@ -13,9 +12,8 @@ public interface DependencyParser<S> {
      * 解析组件的方法
      * @param source 组件的描述符
      * @param context 组件注册空间的上下文
-     * @return
      */
-    List<ComponentInfo> parse(S source, DependencyRegisterContext context);
+    void parse(S source, DependencyRegisterContext context);
 
     /**
      * 解析后引发相关的listener

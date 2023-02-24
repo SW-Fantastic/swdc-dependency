@@ -12,6 +12,9 @@ import org.swdc.dependency.utils.AnnotationUtil;
 
 import java.util.List;
 
+/**
+ * 基于注解的依赖环境加载器。
+ */
 public class AnnotationLoader implements EnvironmentLoader<AnnotationEnvironment> {
 
     private AnnotationEnvironment annotationEnvironment;

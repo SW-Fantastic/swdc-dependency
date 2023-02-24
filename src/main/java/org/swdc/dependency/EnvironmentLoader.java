@@ -3,6 +3,11 @@ package org.swdc.dependency;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 
+/**
+ * 依赖环境加载器，用于创建一个依赖环境的Builder模式的类型。
+ * 提供了各类方便的方法为依赖环境中预先添加各类必要的组件。
+ * @param <T>
+ */
 public interface EnvironmentLoader<T extends DependencyContext> {
 
     /**
