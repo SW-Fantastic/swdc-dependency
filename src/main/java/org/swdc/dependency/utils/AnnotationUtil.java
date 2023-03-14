@@ -13,6 +13,7 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -85,12 +86,55 @@ public class AnnotationUtil {
         return null;
     }
 
+    /**
+     * 从一个可注解的反射对象中查找指定的注解。
+     * @param elem 可标注注解的反射对象（Class，Field，Method等多种反射对象）
+     * @param annotationType 注解类型
+     * @return 注解描述
+     */
     public static AnnotationDescription findAnnotation(AnnotatedElement elem, Class annotationType) {
         Map<Class,AnnotationDescription> descriptionMap = getAnnotations(elem);
         return findAnnotationIn(descriptionMap,annotationType);
     }
 
-    public static List<Method> getAnnotationMethods(Class annotationType) {
+    /**
+     * 读取标注了特定注解的字段。
+     * @param type 从本类读取字段
+     * @param annotationType 字段应当标注此注解
+     * @return 字段列表
+     */
+    public static List<Field> getAnnotationField(Class type, Class annotationType) {
+        List<Field> fields = new ArrayList<>();
+        Class curr = type;
+        while (curr != null) {
+            Field[] currFields = curr.getDeclaredFields();
+            for (Field field: currFields) {
+                Map<Class,AnnotationDescription> desc = getAnnotations(field);
+                if (findAnnotationIn(desc,annotationType) != null) {
+                    fields.add(field);
+                }
+            }
+            curr = curr.getSuperclass();
+        }
+        return fields;
+    }
+
+    /**
+     * 读取一个Annotation对象的Method。
+     * 这里的method指的是注解对象的方法。
+     * <div><code>
+     * <pre>
+     * public @interface Test{
+     *  String value()
+     * }
+     * </pre>
+     * </code></div>
+     * 例如上述示例中的value()方法，那就是本方法读取的目标。
+     *
+     * @param annotationType
+     * @return
+     */
+    private static List<Method> getAnnotationMethods(Class annotationType) {
         List<String> methodNames = Arrays.asList("toString","equals","annotationType","hashCode");
 
         return Stream.of(annotationType.getMethods())
