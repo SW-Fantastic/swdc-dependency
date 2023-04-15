@@ -1,5 +1,6 @@
 package org.swdc.dependency.utils;
 
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -7,6 +8,19 @@ import java.util.Collections;
 import java.util.List;
 
 public class ReflectionUtil {
+
+    public static SerializedLambda extractSerializedLambda(Object lambda) {
+        try {
+            Method method = lambda.getClass()
+                    .getDeclaredMethod("writeReplace");
+            method.setAccessible(true);
+            return (SerializedLambda) method.invoke(lambda);
+        } catch (NoSuchMethodException e) {
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static Method extractGetter(Field field) {
         Class declareOn = field.getDeclaringClass();
