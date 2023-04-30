@@ -85,7 +85,7 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.10.14</version>
+            <version>1.14.4</version>
             <scope>compile</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.github.classgraph/classgraph -->
