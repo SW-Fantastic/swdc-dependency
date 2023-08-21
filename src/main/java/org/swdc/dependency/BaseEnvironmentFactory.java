@@ -9,13 +9,10 @@ import org.swdc.dependency.interceptor.RuntimeAspectInfo;
 import org.swdc.dependency.listeners.AfterCreationListener;
 import org.swdc.dependency.registry.*;
 import org.swdc.dependency.scopes.CacheDependencyHolder;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.dependency.utils.ReflectionUtil;
+import org.swdc.ours.common.type.ClassTypeAndMethods;
 
 import java.lang.reflect.*;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,7 +79,7 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
      * @return 经过增强的代理对象
      */
     private <T> T withInterceptor(ComponentInfo info,Object target, List<ComponentInfo> interceptors) {
-        List<Method> methods = ReflectionUtil.findAllMethods(info.getClazz());
+        List<Method> methods = ClassTypeAndMethods.findAllMethods(info.getClazz());
         Map<Method,List<RuntimeAspectInfo>> processPoints = new HashMap<>();
 
         // 整理AOP拦截数据

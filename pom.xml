@@ -95,6 +95,11 @@
             <version>4.8.102</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.swdc</groupId>
+            <artifactId>our-commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <pluginRepositories>

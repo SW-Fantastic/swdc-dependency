@@ -13,9 +13,12 @@ import org.swdc.dependency.annotations.*;
 import org.swdc.dependency.interceptor.AspectAt;
 import org.swdc.dependency.listeners.AfterRegisterListener;
 import org.swdc.dependency.registry.*;
-import org.swdc.dependency.utils.AnnotationDescription;
 import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.dependency.utils.ReflectionUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.AnnotationDescriptions;
+import org.swdc.ours.common.annotations.Annotations;
+import org.swdc.ours.common.type.ClassTypeAndMethods;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -30,12 +33,12 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
     @Override
     public void parse(Class source, DependencyRegisterContext context) {
 
-        Map<Class, AnnotationDescription> annotations = AnnotationUtil.getAnnotations(source);
+        AnnotationDescriptions annotations = Annotations.getAnnotations(source);
 
-        if (AnnotationUtil.findAnnotationIn(annotations,Dependency.class) != null) {
+        if (Annotations.findAnnotationIn(annotations,Dependency.class) != null) {
             // 检查和处理声明类型的组件定义
             List<Method> methods = Stream.of(source.getMethods())
-                    .filter(m -> AnnotationUtil.findAnnotation(m,Factory.class) != null)
+                    .filter(m -> Annotations.findAnnotation(m,Factory.class) != null)
                     .sorted(Comparator.comparingInt(Method::getParameterCount))
                     .collect(Collectors.toList());
             for (Method method: methods) {
@@ -44,8 +47,8 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     this.parseInternalFactory(source,method,context);
                 }
             }
-        } else if (AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class) != null){
-            AnnotationDescription impl = AnnotationUtil.findAnnotationIn(annotations,ImplementBy.class);
+        } else if (Annotations.findAnnotationIn(annotations,ImplementBy.class) != null){
+            AnnotationDescription impl = Annotations.findAnnotationIn(annotations,ImplementBy.class);
             Class[] classes = impl.getProperty(Class[].class,"value");
             for (Class clazz: classes) {
                 this.parseInternal(clazz,context);
@@ -74,7 +77,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             for (int idx = 0; idx < dependInfos.length; idx ++) {
                 ComponentInfo info = null;
                 Parameter param = params[idx];
-                Map<Class,AnnotationDescription>  annotations = AnnotationUtil.getAnnotations(param);
+                AnnotationDescriptions annotations = Annotations.getAnnotations(param);
                 String name = parseName(annotations);
                 if (name != null) {
                     info = context.findByNamed(name);
@@ -136,7 +139,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             Class provided = method.getReturnType();
 
             // 解析工厂提供的组件
-            Map<Class,AnnotationDescription> anno = AnnotationUtil.getAnnotations(provided);
+            AnnotationDescriptions anno = Annotations.getAnnotations(provided);
             String providedName = parseNameOrDefault(anno,provided);
             Class providedScope = parseScope(anno);
             // 创建提供的组件信息
@@ -147,11 +150,11 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
             Method[] methods = provided.getMethods();
             for (Method  m : methods) {
-                AnnotationDescription init = AnnotationUtil.findAnnotation(m,PostConstruct.class);
+                AnnotationDescription init = Annotations.findAnnotation(m,PostConstruct.class);
                 if (init != null) {
                     parsed.setInitMethod(m);
                 }
-                AnnotationDescription destroy = AnnotationUtil.findAnnotation(m,PreDestroy.class);
+                AnnotationDescription destroy = Annotations.findAnnotation(m,PreDestroy.class);
                 if (destroy != null) {
                     parsed.setDestroyMethod(m);
                 }
@@ -171,7 +174,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
     }
 
     private ComponentInfo parseInternal(Class source, DependencyRegisterContext context) {
-        Map<Class,AnnotationDescription> annotations = AnnotationUtil.getAnnotations(source);
+        AnnotationDescriptions annotations = Annotations.getAnnotations(source);
         // 查找已经存在的组件
         ComponentInfo info = this.getExists(source,annotations,context);
         if (info != null) {
@@ -217,10 +220,10 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
 
         // 解析方法注入
-        List<Method> methods = ReflectionUtil.findAllMethods(source);
+        List<Method> methods = ClassTypeAndMethods.findAllMethods(source);
         for (Method method: methods) {
             if (!AnnotationUtil.hasDependency(method)) {
-                Map<Class, AnnotationDescription> descriptionMap = AnnotationUtil.getAnnotations(method);
+                AnnotationDescriptions descriptionMap = Annotations.getAnnotations(method);
                 if (descriptionMap.containsKey(PostConstruct.class)) {
                     // 解析初始化
                     parsed.setInitMethod(method);
@@ -230,7 +233,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                 } else if (descriptionMap.containsKey(Aspect.class)) {
                     // 解析AOP注解
                     InterceptorInfo interceptorInfo = new InterceptorInfo();
-                    AnnotationDescription aspect = AnnotationUtil.findAnnotationIn(descriptionMap, Aspect.class);
+                    AnnotationDescription aspect = Annotations.findAnnotationIn(descriptionMap, Aspect.class);
                     if (!parsed.isInterceptor()) {
                         parsed.setInterceptor(true);
                     }
@@ -250,7 +253,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     if (annotation != Object.class) {
                         interceptorInfo.setAnnotationType(annotation);
                     }
-                    AnnotationDescription order = AnnotationUtil.findAnnotationIn(descriptionMap,Order.class);
+                    AnnotationDescription order = Annotations.findAnnotationIn(descriptionMap,Order.class);
                     AspectAt aspectAt = aspect.getProperty(AspectAt.class,"at");
                     interceptorInfo.setAt(aspectAt);
                     interceptorInfo.setMethod(method);
@@ -259,7 +262,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
                     }
                     parsed.addInterceptorInfo(interceptorInfo);
                 }
-                AnnotationDescription aspectAnno = AnnotationUtil.findAnnotationIn(descriptionMap,With.class);
+                AnnotationDescription aspectAnno = Annotations.findAnnotationIn(descriptionMap,With.class);
                 if (aspectAnno != null) {
                     // 解析AOP的注解 - 特定的注解被标注了With，它们为本方法提供了切面。
                     Class[] interceptors = aspectAnno.getProperty(Class[].class, "aspectBy");
@@ -294,7 +297,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
             parse(field.getType(),context);
             ComponentInfo parsedInfo = null;
 
-            Map<Class,AnnotationDescription> desc = AnnotationUtil.getAnnotations(field);
+            AnnotationDescriptions desc = Annotations.getAnnotations(field);
             String depName = parseName(desc);
             if (depName != null && !depName.isBlank() && !depName.isEmpty()) {
                 parsedInfo = context.findByNamed(depName);
@@ -320,9 +323,9 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         }
 
         // 解析AOP
-        AnnotationDescription aspect = AnnotationUtil.findAnnotationIn(annotations,With.class);
+        AnnotationDescription aspect = Annotations.findAnnotationIn(annotations,With.class);
         if (parsed.isMultiple() && aspect == null) {
-            aspect = AnnotationUtil.findAnnotation(parsed.getAbstractClazz(),With.class);
+            aspect = Annotations.findAnnotation(parsed.getAbstractClazz(),With.class);
         }
         if (aspect != null) {
             Class[] interceptors = aspect.getProperty(Class[].class, "aspectBy");
@@ -350,7 +353,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
 
     }
 
-    private ComponentInfo getExists(Class source,Map<Class,AnnotationDescription> annotations,DependencyRegisterContext context) {
+    private ComponentInfo getExists(Class source,AnnotationDescriptions annotations,DependencyRegisterContext context) {
         // 解析组件名
         AnnotationDescription named = annotations.get(Named.class);
         if (named != null) {
@@ -370,8 +373,8 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         return null;
     }
 
-    private Class parseScope(Map<Class,AnnotationDescription> descriptionMap) {
-        AnnotationDescription scopeDesc = AnnotationUtil.findAnnotationIn(descriptionMap,Scope.class);
+    private Class parseScope(AnnotationDescriptions descriptionMap) {
+        AnnotationDescription scopeDesc = Annotations.findAnnotationIn(descriptionMap,Scope.class);
         Class scope = null;
         if (scopeDesc == null) {
             // 默认为singleton的Scope
@@ -382,7 +385,7 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         return scope;
     }
 
-    private String parseNameOrDefault(Map<Class,AnnotationDescription> descriptionMap, Class source) {
+    private String parseNameOrDefault(AnnotationDescriptions descriptionMap, Class source) {
         String name = parseName(descriptionMap);
         if (name == null) {
             return source.getName();
@@ -390,16 +393,16 @@ public class AnnotationDependencyParser implements DependencyParser<Class> {
         return name;
     }
 
-    private String parseName(Map<Class,AnnotationDescription> descriptionMap) {
-        AnnotationDescription named = AnnotationUtil.findAnnotationIn(descriptionMap,Named.class);
+    private String parseName(AnnotationDescriptions descriptionMap) {
+        AnnotationDescription named = Annotations.findAnnotationIn(descriptionMap,Named.class);
         if (named != null) {
             return named.getProperty(String.class,"value");
         }
-        named = AnnotationUtil.findAnnotationIn(descriptionMap,Resource.class);
+        named = Annotations.findAnnotationIn(descriptionMap,Resource.class);
         if (named != null) {
             return named.getProperty(String.class,"name");
         }
-        named = AnnotationUtil.findAnnotationIn(descriptionMap, ManagedBean.class);
+        named = Annotations.findAnnotationIn(descriptionMap, ManagedBean.class);
         if (named != null) {
             return named.getProperty(String.class,"value");
         }

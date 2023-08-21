@@ -1,74 +1,11 @@
 package org.swdc.dependency.utils;
 
-import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class ReflectionUtil {
-
-    public static SerializedLambda extractSerializedLambda(Object lambda) {
-        try {
-            Method method = lambda.getClass()
-                    .getDeclaredMethod("writeReplace");
-            method.setAccessible(true);
-            return (SerializedLambda) method.invoke(lambda);
-        } catch (NoSuchMethodException e) {
-            return null;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Method extractGetter(Field field) {
-        Class declareOn = field.getDeclaringClass();
-        Class fieldType = field.getType();
-
-        String name = field.getName();
-        name = name.substring(0,1).toUpperCase() + name.substring(1);
-        if (fieldType == boolean.class) {
-            name = "is" + name;
-        } else {
-            name = "get" + name;
-        }
-        try {
-            return declareOn.getMethod(name);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static Method extractSetter(Field field) {
-        Class declareOn = field.getDeclaringClass();
-        Class fieldType = field.getType();
-
-        String name = field.getName();
-        name = "set" + name.substring(0,1).toUpperCase() + name.substring(1);
-        try {
-            return declareOn.getMethod(name,fieldType);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public static List<Method> findAllMethods(Class clazz) {
-        List<Method> methodList = new ArrayList<>();
-        Class current = clazz;
-
-        while (current != null) {
-            if (current == Object.class) {
-                break;
-            }
-            Method[] methods = current.getMethods();
-            for (Method method: methods) {
-                methodList.add(method);
-            }
-            current = current.getSuperclass();
-        }
-        return methodList;
-    }
 
     /**
      * 获取Class的可注入方法
@@ -91,24 +28,6 @@ public class ReflectionUtil {
         return methodList;
     }
 
-    public static List<Field> findFieldsByAnnotation(Class clazz,Class annotatedWith) {
-        List<Field> fieldList = new ArrayList<>();
-        Class current = clazz;
-
-        while (current != null) {
-            Field[] fields = current.getDeclaredFields();
-            for (Field field: fields) {
-                AnnotationDescription desc = AnnotationUtil.findAnnotation(field,annotatedWith);
-                if (desc != null) {
-                    fieldList.add(field);
-                }
-            }
-            current = current.getSuperclass();
-        }
-        return fieldList;
-    }
-
-
     /**
      * 获取类的可注入字段
      * @param clazz 类
@@ -127,54 +46,6 @@ public class ReflectionUtil {
             current = current.getSuperclass();
         }
         return methodList;
-    }
-
-    public static boolean isBasicType(Class type) {
-        if (type == int.class ||
-                type == float.class ||
-                type == double.class ||
-                type == char.class ||
-                type == byte.class ||
-                type == short.class) {
-            return  true;
-        }
-        return  false;
-    }
-
-    public static boolean isBoxedType(Class type) {
-        if (type == Integer.class ||
-                type == Float.class ||
-                type == Double.class ||
-                type == Character.class ||
-                type == Byte.class ||
-                type == Boolean.class||
-                type == Short.class) {
-            return  true;
-        }
-        return  false;
-    }
-
-    public static Class getBasicType(Class type){
-        if (isBoxedType(type)) {
-            if (Integer.class.equals(type)) {
-                return int.class;
-            } else if (Double.class.equals(type)) {
-                return double.class;
-            } else if (Float.class.equals(type)) {
-                return float.class;
-            } else if (Character.class.equals(type)) {
-                return char.class;
-            } else if (Byte.class.equals(type)) {
-                return byte.class;
-            } else if (Boolean.class.equals(type)){
-                return boolean.class;
-            } else if (Short.class.equals(type)) {
-                return short.class;
-            }
-        } else if (isBasicType(type)) {
-            return type;
-        }
-        throw new RuntimeException(type.getName() + "不是一个包装类型，无法进行转换");
     }
 
 }

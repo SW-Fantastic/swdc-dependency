@@ -10,8 +10,7 @@ import org.swdc.dependency.parser.AnnotationDependencyParser;
 import org.swdc.dependency.parser.DependencyParser;
 import org.swdc.dependency.registry.*;
 import org.swdc.dependency.scopes.SingletonDependencyScope;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.ours.common.annotations.Annotations;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -214,7 +213,7 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
 
         Object factory = factoryMap.get(clazz);
         if (factory == null) {
-            if (AnnotationUtil.findAnnotation(clazz, Dependency.class) != null) {
+            if (Annotations.findAnnotation(clazz, Dependency.class) != null) {
                 // 配置类型的Factory，不允许注入，只提供组件和配置。
                 try {
                     factory = clazz.getConstructor().newInstance();
@@ -258,7 +257,6 @@ public class AnnotationEnvironment extends BaseEnvironmentFactory implements Dep
     public  <T> T getInternal(ComponentInfo info) {
 
         Object realComp = null;
-        Map<Class, AnnotationDescription> objects = AnnotationUtil.getAnnotations(info.getClazz());
         if (!info.getName().equals(info.getClazz().getName())) {
             // 具名组件，名称和class的全限定名不一致。
             realComp = getHolder().getByName(info.getName());

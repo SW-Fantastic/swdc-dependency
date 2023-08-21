@@ -1,8 +1,8 @@
 package org.swdc.dependency.listeners;
 
 import org.swdc.dependency.annotations.Order;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.Annotations;
 
 public interface DependencyListener <T> {
 
@@ -19,7 +19,7 @@ public interface DependencyListener <T> {
      * @return
      */
     default int getOrder() {
-        AnnotationDescription desc = AnnotationUtil.findAnnotation(this.getClass(), Order.class);
+        AnnotationDescription desc = Annotations.findAnnotation(this.getClass(), Order.class);
         if (desc == null) {
             return 0;
         }

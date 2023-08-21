@@ -8,6 +8,7 @@ module swdc.application.dependency {
     requires org.slf4j;
     requires jul.to.slf4j;
     requires java.logging;
+    requires swdc.commons;
 
     exports org.swdc.dependency;
     exports org.swdc.dependency.utils;

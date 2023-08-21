@@ -1,9 +1,10 @@
 package org.swdc.dependency.event;
 
 import org.swdc.dependency.annotations.EventListener;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
 import org.swdc.dependency.utils.ReflectionUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.Annotations;
+import org.swdc.ours.common.type.ClassTypeAndMethods;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -66,9 +67,9 @@ public class Events {
         Map<Class,List<EventHandler>> result = new HashMap<>();
 
         Class type = instance.getClass();
-        List<Method> methods = ReflectionUtil.findAllMethods(type);
+        List<Method> methods = ClassTypeAndMethods.findAllMethods(type);
         for (Method item: methods) {
-            AnnotationDescription annoDesc = AnnotationUtil.findAnnotation(item, EventListener.class);
+            AnnotationDescription annoDesc = Annotations.findAnnotation(item, EventListener.class);
             if (annoDesc == null) {
                 continue;
             }

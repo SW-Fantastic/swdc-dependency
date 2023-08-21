@@ -10,8 +10,9 @@ import org.junit.jupiter.api.Test;
 import org.swdc.dependency.annotations.AliasFor;
 import org.swdc.dependency.annotations.Dependency;
 import org.swdc.dependency.annotations.Factory;
-import org.swdc.dependency.utils.AnnotationDescription;
-import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.ours.common.annotations.AnnotationDescription;
+import org.swdc.ours.common.annotations.AnnotationDescriptions;
+import org.swdc.ours.common.annotations.Annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -107,21 +108,21 @@ public class AnnotationUtilsTest {
     @Test
     public void testAnnotationFind() {
         // 测试获取直接标记在类上面的注解
-        Map<Class, AnnotationDescription> annoMap = AnnotationUtil.getAnnotations(Depend.class);
+        AnnotationDescriptions annoMap = Annotations.getAnnotations(Depend.class);
         Assertions.assertTrue(annoMap.containsKey(Dependency.class));
 
         // 测试获取未标记在类的注解
-        annoMap = AnnotationUtil.getAnnotations(TestEntTwo.class);
+        annoMap = Annotations.getAnnotations(TestEntTwo.class);
         Assertions.assertFalse(annoMap.containsKey(Scope.class));
 
         // 测试获取标记在注解中的注解
-        annoMap = AnnotationUtil.getAnnotations(TestEntry.class);
+        annoMap = Annotations.getAnnotations(TestEntry.class);
         Assertions.assertFalse(annoMap.containsKey(Scope.class));
-        Assertions.assertNotNull(AnnotationUtil.findAnnotationIn(annoMap, Scope.class));
+        Assertions.assertNotNull(Annotations.findAnnotationIn(annoMap, Scope.class));
 
         // 测试元注解
-        annoMap = AnnotationUtil.getAnnotations(Target.class);
-        Assertions.assertTrue(annoMap.isEmpty());
+        annoMap = Annotations.getAnnotations(Target.class);
+        Assertions.assertTrue(annoMap.values().size() == 0);
     }
 
     /**
@@ -129,7 +130,7 @@ public class AnnotationUtilsTest {
      */
     @Test
     public void testAnnotationRead() {
-        AnnotationDescription desc = AnnotationUtil.findAnnotation(TestEntTwo.class,Named.class);
+        AnnotationDescription desc = Annotations.findAnnotation(TestEntTwo.class,Named.class);
         // 获取在注解中的属性
         String name = desc.getProperty(String.class,"value");
         Assertions.assertEquals("test",name);
@@ -138,7 +139,7 @@ public class AnnotationUtilsTest {
         Assertions.assertNull(name);
 
         // 测试AliasFor的使用
-        desc = AnnotationUtil.findAnnotation(TestEntry.class, AnnoTest.class);
+        desc = Annotations.findAnnotation(TestEntry.class, AnnoTest.class);
         Assertions.assertNotNull(desc);
 
         AnnotationDescription resource = desc.find(Resource.class);

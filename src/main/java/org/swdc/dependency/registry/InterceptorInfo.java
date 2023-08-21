@@ -3,6 +3,7 @@ package org.swdc.dependency.registry;
 
 import org.swdc.dependency.interceptor.AspectAt;
 import org.swdc.dependency.utils.AnnotationUtil;
+import org.swdc.ours.common.annotations.Annotations;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -76,7 +77,7 @@ public class InterceptorInfo {
             return Arrays.asList(this.returnType).contains(returnType);
         }
         if (this.getAnnotationType() != null) {
-            return AnnotationUtil.findAnnotation(method,this.getAnnotationType()) != null;
+            return Annotations.findAnnotation(method,this.getAnnotationType()) != null;
         }
         if (this.getNamePattern() != null) {
             return Pattern.compile(this.namePattern).matcher(method.getName()).find();
