@@ -5,7 +5,7 @@
 
     <artifactId>application-component</artifactId>
     <groupId>org.swdc</groupId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
@@ -98,7 +98,7 @@
         <dependency>
             <groupId>org.swdc</groupId>
             <artifactId>our-commons</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
