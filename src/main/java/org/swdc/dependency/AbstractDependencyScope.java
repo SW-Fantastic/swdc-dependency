@@ -48,6 +48,12 @@ public abstract class AbstractDependencyScope implements DependencyScope {
     public <T> T getByClass(Class<T> clazz) {
         List<Object> typed = typedComponents.get(clazz);
         if (typed == null || typed.size() == 0) {
+            if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class && !clazz.getSuperclass().isPrimitive()) {
+                Object superTyped = getByClass(clazz.getSuperclass());
+                if (superTyped != null && clazz == superTyped.getClass()) {
+                    return (T) superTyped;
+                }
+            }
             return null;
         }
         if (typed.size() > 1) {
