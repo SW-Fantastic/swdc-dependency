@@ -27,7 +27,9 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
     /**
      * AOP的处理所需要的ByteBuddy
      */
-    private ByteBuddy byteBuddy = new ByteBuddy();
+    private ByteBuddy byteBuddy = null;
+
+    private boolean isNative = false;
 
     /**
      * 未创建完成的组件缓存
@@ -49,6 +51,17 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
 
     @Override
     public <T> T create(ComponentInfo info) {
+        if (byteBuddy == null && !isNative) {
+            synchronized (BaseEnvironmentFactory.class) {
+                if (byteBuddy == null) {
+                    try {
+                        byteBuddy = new ByteBuddy();
+                    } catch (Throwable e) {
+                        isNative = true;
+                    }
+                }
+            }
+        }
         T target = null;
         if (info.getFactory() != null) {
             target = createByFactory(info);
@@ -60,6 +73,11 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
         if (EventEmitter.class.isAssignableFrom(target.getClass())) {
             EventEmitter accept = (EventEmitter) target;
             accept.setEvents(events);
+        }
+
+        if (Dynamic.class.isAssignableFrom(target.getClass())) {
+            Dynamic dynamic = (Dynamic) target;
+            dynamic.setContext(this);
         }
 
         this.initialize(info,target);
@@ -255,7 +273,7 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 Object realComp = getInternal(param);
                 if (realComp == null) {
                     // cache和scopes里面都没有
-                    throw new RuntimeException("无法创建实例，因为缺少组件:" + param.getClazz().getName());
+                    throw new RuntimeException("Missing component :" + param.getClazz().getName());
                 }
                 params[idx] = realComp;
             }
@@ -265,7 +283,7 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
                 holder.put(info,result);
                 return (T)result;
             } catch (Exception e) {
-                throw new RuntimeException("创建失败：",e);
+                throw new RuntimeException("Failed to create component：",e);
             }
 
         } else {
@@ -273,13 +291,13 @@ public abstract class BaseEnvironmentFactory implements DependencyFactory {
             try {
                 Constructor constructor = info.getClazz().getConstructor();
                 if (constructor == null) {
-                    throw new RuntimeException("无法创建实例，因为没有合适的构造方法。");
+                    throw new RuntimeException("No suitable constructor.");
                 }
                 Object result = constructor.newInstance();
                 holder.put(info,result);
                 return (T)result;
             } catch (Exception e) {
-                throw new RuntimeException("创建失败，原因是：",e);
+                throw new RuntimeException("Failed to create instance ：",e);
             }
 
         }
